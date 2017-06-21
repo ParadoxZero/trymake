@@ -15,6 +15,27 @@ class Customer(models.Model):
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
     phone = models.CharField(validators=[phone_validator], max_length=11,unique=True)
 
+    def send_mail(self, subject, message):
+        #TODO
+        pass
+
+    def get_address_list(self):
+        address_list = Address.objects.filter(customer=self)
+        return address_list
+
+    def add_address(self, name:str, long_address:str, city:str,
+                    state: 'State', pincode:str, landmark:str, phone:str)->None:
+        address = Address()
+        address.customer = self
+        address.address = long_address
+        address.city = city
+        address.phone = phone
+        address.landmark = landmark
+        address.pincode = pincode
+        address.state = state
+        address.name = name
+        address.save()
+
     @staticmethod
     def create(username: str, email: str, password: str, firstname: str, lastname: str):
         customer = Customer()
@@ -36,6 +57,7 @@ class Customer(models.Model):
         g.user_set.add(customer.user)
         g.save()
         return customer
+
 
     @property
     def serialize(self):

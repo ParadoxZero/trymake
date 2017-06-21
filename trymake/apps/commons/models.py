@@ -13,7 +13,7 @@ class Image(models.Model):
     # TODO def delete_image()
 
 
-class AdminPermission(models.Model):
+class Permissions(models.Model):
     orders = models.BooleanField()
     complaints = models.BooleanField()
     customer_email = models.BooleanField()

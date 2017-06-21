@@ -40,8 +40,12 @@ INSTALLED_APPS = [
     'storages',
     'rest_framework',
     'trymake.apps.commons',
+    'trymake.apps.complaints',
     'trymake.apps.customer',
+    'trymake.apps.delivery',
     'trymake.apps.product',
+    'trymake.apps.support_staff',
+    'trymake.apps.user_interactions',
     'trymake.apps.vendor',
     'trymake.apps.orders_management',
 ]

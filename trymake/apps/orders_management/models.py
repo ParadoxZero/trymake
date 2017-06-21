@@ -1,6 +1,6 @@
 from django.db import models
 
-from trymake.apps.customer.models import Customer
+from trymake.apps.customer.models import Customer, Address
 from trymake.apps.product.models import Product
 
 
@@ -20,6 +20,7 @@ class Order(models.Model):
     is_completed = models.BooleanField()
     order_status = models.ForeignKey(OrderStatus)
     last_status_changed = models.DateTimeField()
+    address = models.ForeignKey(Address)
 
 
 class Item(models.Model):

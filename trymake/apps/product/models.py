@@ -16,8 +16,7 @@ class AttributeValues(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=250, unique=True, db_index=True)
-    sku = models.CharField(max_length=4, unique=True, db_index=True)
-    price = models.DecimalField(max_digits=8, decimal_places=2)
+    slug = models.CharField(max_length=4, unique=True, db_index=True)
     discount = models.PositiveSmallIntegerField(null=True, default=0)
     approximate_weight = models.DecimalField(max_digits=6,decimal_places=2)
     attribute_value = models.OneToOneField(AttributeValues)
