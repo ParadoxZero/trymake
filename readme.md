@@ -1,7 +1,6 @@
-# Trymake API
-Prelimenery API calls.
+# Trymake
 
-The trymake API is divided into multiple packages.
+The trymake is divided into multiple packages.
 
 ## TrymakeAPI
 

@@ -37,6 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'storages',
+    'rest_framework',
+    'trymake.apps.commons',
+    'trymake.apps.customer',
+    'trymake.apps.product',
+    'trymake.apps.vendor',
+    'trymake.apps.orders_management',
 ]
 
 MIDDLEWARE = [
@@ -76,8 +83,12 @@ WSGI_APPLICATION = 'trymake.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'trymake_django',
+        'USER':'root',
+        'PASSWORD':'root',
+        'HOST':"localhost",
+        'PORT':'3306'
     }
 }
 

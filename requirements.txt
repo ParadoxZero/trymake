@@ -2,3 +2,4 @@ django
 djangorestframework
 django-storages
 boto3
+pillow

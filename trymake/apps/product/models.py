@@ -2,10 +2,11 @@ from django.db import models
 
 
 # Create your models here.
+from trymake.apps.commons.models import Image
 
 
 class AttributeName(models.Model):
-    name = models.CharField(max_length=500, unique=True, db_index=True)
+    name = models.CharField(max_length=250, unique=True, db_index=True)
 
 
 class AttributeValues(models.Model):
@@ -13,28 +14,22 @@ class AttributeValues(models.Model):
     value = models.CharField(max_length=500)
 
 
-class Image(models.Model):
-    upload_to = models.CharField(max_length=100)
-    name = models.CharField(max_length=500, unique=True, db_index=True)
-    image = models.ImageField(upload_to=upload_to, name=name)
-    date_added = models.DateTimeField()
-
-    # TODO def create(upload_to, name, image, date)
-    # TODO def delete_image()
-
-
 class Product(models.Model):
-    name = models.CharField(max_length=500, unique=True, db_index=True)
+    name = models.CharField(max_length=250, unique=True, db_index=True)
     sku = models.CharField(max_length=4, unique=True, db_index=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     discount = models.PositiveSmallIntegerField(null=True, default=0)
+    approximate_weight = models.DecimalField(max_digits=6,decimal_places=2)
     attribute_value = models.OneToOneField(AttributeValues)
+    short_description = models.TextField()
+    description = models.TextField()
+    images = models.ManyToManyField(Image)
 
     # TODO def create(name:str,sku:str,price:str, attribute_list:dictionary)
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=500, unique=True, db_index=True)
+    name = models.CharField(max_length=250, unique=True, db_index=True)
     image = models.ForeignKey(Image)
     parent_category = models.ForeignKey("self", null=True)
     attributes = models.ManyToManyField(AttributeName)
