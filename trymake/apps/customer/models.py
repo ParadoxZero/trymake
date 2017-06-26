@@ -37,12 +37,14 @@ class Customer(models.Model):
         address.save()
 
     @staticmethod
-    def create(username: str, email: str, password: str, firstname: str, lastname: str):
+    def create(email: str, password: str, firstname: str, phone:str)->'Customer':
+        if User.objects.filter(email=email).exists():
+            raise IntegrityError("Email ID Duplicated")
         customer = Customer()
         customer.email = email
-        customer.user = User.objects.create_user(username, email, password)
-        customer.user.last_name = lastname
+        customer.user = User.objects.create_user(email, email, password)
         customer.user.first_name = firstname
+        customer.phone = phone
         customer.user.save()
         try:
             g = Group.objects.get(name="Customer")

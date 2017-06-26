@@ -1,0 +1,17 @@
+Error: {{ error_message }} <br>
+
+<form method="post" action="/login">
+    {{ login_form.non_field_errors }}
+    {{ login_form.errors }}
+{{ login_form }} <br>
+    {% csrf_token %}
+        <input type="submit">
+
+</form>
+
+------------------------
+<form method="post" action="/reg">
+{{ registration_form }}
+        {% csrf_token %}
+    <input type="submit">
+</form>

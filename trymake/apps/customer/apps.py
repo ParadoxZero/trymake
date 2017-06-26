@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class ModCustomerConfig(AppConfig):
-    name = 'trymakeAPI.API_1_0.mod_customer'
+class CustomerConfig(AppConfig):
+    name = 'trymake.apps.customer'

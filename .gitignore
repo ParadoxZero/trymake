@@ -203,3 +203,4 @@ ENV/
 #############
 db.sqlite3
 .idea/
+*migratinos*

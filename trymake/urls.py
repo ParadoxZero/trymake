@@ -16,6 +16,11 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+from trymake.website.ecommerce.views import index, process_login, process_registration
+
 urlpatterns = [
+    url(r'^$', index, name="index" ),
+    url(r'^login', process_login, name="login"),
+    url(r'^reg', process_registration, name="reg"),
     url(r'^admin/', admin.site.urls),
 ]
