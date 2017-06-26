@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'trymake.apps.user_interactions',
     'trymake.apps.vendor',
     'trymake.apps.orders_management',
-    'trymake.website.ecommerce'
+    'trymake.website.core'
 ]
 
 MIDDLEWARE = [

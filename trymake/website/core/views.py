@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponseNotAllowed
 from django.http import HttpResponseRedirect
@@ -7,7 +7,7 @@ from django.shortcuts import render
 
 from trymake import settings
 from trymake.apps.customer.models import Customer
-from trymake.website.ecommerce.forms import EnterEmailForm, RegistrationForm, LoginForm
+from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm
 
 ###########################
 # Error Messages ##########
@@ -52,14 +52,14 @@ def process_login(request):
     """
     if request.method != "POST":  # If reached incorrectly
         return HttpResponseNotAllowed(permitted_methods=["POST"])
-    form = LoginForm(request.POST)
+    form = LoginForm(request,request.POST)
     if form.is_valid():
-        user = form.cleaned_data['user']
+        user = form.user
         login(request, user)
     else:
         request.session['error_message'] = INCORRECT_CREDENTIALS
-        if True:
-            print(form.errors)
+        if settings.DEBUG:
+            print("Debug: ",form.errors)
         request.session['login_form'] = request.POST
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
@@ -80,11 +80,15 @@ def process_registration(request):
         request.session['registration_form'] = request.POST
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
-
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect("/")
 def index(request):
     context = {'error_message': request.session.get('error_message', ""),
                'login_form': LoginForm(request.session.get('login_form')),
+               'user': request.user if request.user is not None else "",
                'registration_form': RegistrationForm(request.session.get('registration_form'))}
+    print(request.user)
     request.session.pop('login_form', None)
     request.session.pop('registration_form', None)
     request.session.pop('error_message', None)

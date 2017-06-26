@@ -13,14 +13,10 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib import admin
 
-from trymake.website.ecommerce.views import index, process_login, process_registration
-
 urlpatterns = [
-    url(r'^$', index, name="index" ),
-    url(r'^login', process_login, name="login"),
-    url(r'^reg', process_registration, name="reg"),
     url(r'^admin/', admin.site.urls),
+    url(r'', include('trymake.website.core.urls', namespace="core"))
 ]

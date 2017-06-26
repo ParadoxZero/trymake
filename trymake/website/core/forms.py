@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
-from trymake.website.ecommerce.validators import validator_email_doesnt_exist
+from trymake.website.core.validators import validator_email_doesnt_exist
 
 
 class EnterEmailForm(forms.Form):
@@ -65,6 +65,11 @@ class LoginForm(forms.Form):
                         code='invalid_login',
                         params={'username': self.username_field.verbose_name},
                     )
+                )
+                raise forms.ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                    params={'username': self.username_field.verbose_name},
                 )
         return self.cleaned_data
 
