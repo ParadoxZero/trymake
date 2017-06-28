@@ -1,3 +1,13 @@
+"""
+
+Author: Sidhin S Thomas (sidhin@trymake.com)
+
+Copyright (c) 2017 Trymake Inc
+All Rights Reserved
+Unauthorized copying of this file, via any medium is strictly prohibited
+Proprietary and confidential
+"""
+
 import decimal
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
