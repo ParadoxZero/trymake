@@ -13,14 +13,14 @@ class OrderStatus(models.Model):
 
 
 class Order(models.Model):
-    customer = models.ForeignKey(Customer)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True)
     total_cost = models.DecimalField(max_digits=8, decimal_places=2)
     date_placed = models.DateTimeField()
     date_completed = models.DateTimeField()
     is_completed = models.BooleanField()
-    order_status = models.ForeignKey(OrderStatus)
+    order_status = models.ForeignKey(OrderStatus, on_delete=models.SET_NULL, null=True)
     last_status_changed = models.DateTimeField()
-    address = models.ForeignKey(Address)
+    address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
 
 
 class Item(models.Model):

@@ -2,8 +2,12 @@ from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 
-from trymake.website.core.validators import validator_email_doesnt_exist
+from trymake.apps.orders_management.models import Order
+from trymake.apps.user_interactions.models import Feedback, OrderFeedback, ProductFeedback
+from trymake.apps.customer.models import State, Customer
+from trymake.website.core.validators import email_doesnt_exist, pin_validator, phone_validator, phone_doesnt_exist
 
 
 class EnterEmailForm(forms.Form):
@@ -13,7 +17,7 @@ class EnterEmailForm(forms.Form):
             'autofocus': True,
             'placeholder': "Enter Email"
         }),
-        validators=[validator_email_doesnt_exist]
+        validators=[email_doesnt_exist]
     )
 
 
@@ -79,14 +83,16 @@ class RegistrationForm(forms.Form):
         label="Name",
         widget=forms.TextInput(attrs={
             'autofocus': True,
-            "placeholder": "Enter Name"})
+            "placeholder": "Enter Name"
+        })
     )
 
     phone = forms.CharField(
         label="Phone",
         widget=forms.TextInput(attrs={
             "placeholder": "Enter Phone Number"
-        })
+        }),
+        validators=[phone_validator, phone_doesnt_exist]
     )
     email = forms.EmailField(
         label="Email",
@@ -94,7 +100,7 @@ class RegistrationForm(forms.Form):
             attrs={
                 "placeholder": "Enter Email"
             }),
-        validators=[validator_email_doesnt_exist]
+        validators=[email_doesnt_exist]
     )
 
     password = forms.CharField(
@@ -118,3 +124,102 @@ class RegistrationForm(forms.Form):
                 raise ValidationError("Passwords don't match", code="password_mismatch")
         validate_password(password)
         return password_verify
+
+
+class AddressForm(forms.Form):
+    phone = forms.CharField(validators=[phone_validator], max_length=11)
+
+    address = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'autofocus': True,
+        }),
+    )
+    pincode = forms.CharField(max_length=6, validators=[pin_validator])
+
+    landmark = forms.CharField()
+    city = forms.CharField()
+    state = forms.ModelChoiceField(queryset=State.objects.filter(country__code='IN'))
+
+
+class UpdateProfileForm(forms.Form):
+    name = forms.CharField()
+    phone = forms.CharField(validators=[phone_validator], max_length=11)
+
+
+class ChangePasswordForm(forms.Form):
+    old_password = forms.CharField(
+        label="Current Password",
+        help_text="Enter Current Password",
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+
+    password1 = forms.CharField(
+        label="New Password",
+        help_text="Make sure to enter long password",
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+
+    password2 = forms.CharField(
+        label="Repeat Password",
+        help_text="Enter your new password again",
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+
+    def clean_password2(self):
+        password = self.cleaned_data.get("password1")
+        password_verify = self.cleaned_data.get("password2")
+        if password and password_verify:
+            if password != password_verify:
+                raise ValidationError("Passwords don't match", code="password_mismatch")
+        validate_password(password_verify)
+        return password_verify
+
+
+class ProductFeedbackForm(forms.ModelForm):
+    class Meta:
+        model = ProductFeedback
+        exclude = ['verified_buyer', 'customer']
+
+    def save_feedback(self, customer: Customer):
+        """
+            Feedback needs option which customer is saving.
+        :type customer: Customer
+        """
+        self.instance.customer = customer
+        return self.save()
+
+
+class OrderFeedbackForm(forms.ModelForm):
+    class Meta:
+        model = OrderFeedback
+        exclude = ['order']
+
+    def save_feedback(self, order: Order):
+        self.instance.order = order
+        return self.save()
+
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        exclude = ['customer']
+
+    def save_feedback(self, customer: Customer):
+        """
+            Feedback needs which customer is saving.
+        :type customer: Customer
+        """
+        self.instance.customer = customer
+        return self.save()
+
+
+class RegisterComplaint(forms.Form):
+    oder_id = forms.CharField(max_length=6)
+    title = forms.CharField(max_length=140)
+    body = forms.CharField(
+        widget=forms.Textarea
+    )
+

@@ -2,7 +2,7 @@ Error: {{ error_message }} <br>
 
 Hi: {{ user }}
 
-<form method="post" action="/login">
+<form method="post" action="{% url "core:login" %}">
     {{ login_form.non_field_errors }}
     {{ login_form.errors }}
 {{ login_form }} <br>
@@ -12,8 +12,10 @@ Hi: {{ user }}
 </form>
 
 ------------------------
-<form method="post" action="/reg">
+<form method="post" action="{% url "core:reg" %}">
 {{ registration_form }}
         {% csrf_token %}
     <input type="submit">
 </form>
+
+{{ address_form }}

@@ -7,6 +7,8 @@ from django.db import models
 
 
 class Customer(models.Model):
+    GROUP_NAME = "Customer"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     user = models.OneToOneField(User, unique=True)
     email = models.EmailField(unique=True, null=False, db_index=True)
@@ -14,6 +16,7 @@ class Customer(models.Model):
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
     phone = models.CharField(validators=[phone_validator], max_length=11,unique=True)
+
 
     def send_mail(self, subject, message):
         #TODO
@@ -47,9 +50,9 @@ class Customer(models.Model):
         customer.phone = phone
         customer.user.save()
         try:
-            g = Group.objects.get(name="Customer")
+            g = Group.objects.get(name=Customer.GROUP_NAME)
         except Group.DoesNotExist:
-            g = Group(name="Customer")
+            g = Group(name=Customer.GROUP_NAME)
             g.save()
         try:
             customer.save()
@@ -76,7 +79,7 @@ class Customer(models.Model):
 
 
 class Country(models.Model):
-    code = models.CharField(max_length=2,unique=True)
+    code = models.CharField(max_length=2,unique=True, db_index=True)
     name = models.CharField(max_length=500)
 
     def __str__(self):
@@ -84,7 +87,7 @@ class Country(models.Model):
 
 
 class State(models.Model):
-    code = models.CharField(max_length=2,unique=True)
+    code = models.CharField(max_length=2,unique=True, db_index=True)
     country = models.ForeignKey(Country, db_index=True)
     name = models.CharField(max_length=500)
 
@@ -93,7 +96,7 @@ class State(models.Model):
 
 
 class Address(models.Model):
-    customer = models.ForeignKey(Customer, db_index=True)
+    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=255)
     address = models.TextField()
 
@@ -106,7 +109,12 @@ class Address(models.Model):
     landmark = models.CharField(max_length=500, blank=True)
 
     city = models.CharField(max_length=500)
-    state = models.ForeignKey(State)
+    state = models.ForeignKey(State,on_delete=models.SET_NULL, null=True)
+
+    default = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = (('default','customer'),)
 
     def __str__(self):
         return "%s %s : %s - %s"%(self.customer.user.first_name,

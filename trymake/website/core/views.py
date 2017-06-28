@@ -1,26 +1,54 @@
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import AuthenticationForm
-from django.http import HttpResponseNotAllowed
+from django.contrib.auth import login, logout
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.views.decorators.http import require_POST
 
 from trymake import settings
+from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer
-from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm
+from trymake.apps.orders_management.models import Order
+
+from trymake.website.core import utils
+from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm
+from trymake.website.core.utils import get_context, ERROR_MESSAGE
+from website.core.decorators import require_logged_out, customer_login_required
+
+############################
+# Constants ################
+############################
+
+
 
 ###########################
 # Error Messages ##########
 ###########################
 
-
 INCORRECT_CREDENTIALS = "Incorrect username or password"
 INVALID_INPUT = "Invalid Input"
 
 
-################################################################################################
-# Login views
-################################################################################################
+def redirect_to_origin(request):
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+###########################
+
+
+def index(request):
+    context = {ERROR_MESSAGE: request.session.get('error_message', ""),
+               'login_form': LoginForm(request.session.get('login_form_data')),
+               'user': request.user if request.user.is_authenticated() is not None else "",
+               'registration_form': RegistrationForm(request.session.get('registration_form_data')),
+               'address_form': AddressForm()}
+    request.session.pop('login_form_data', None)
+    request.session.pop('registration_form_data', None)
+    request.session.pop('error_message', None)
+    print()
+    return render(request, 'website/core/index.html', context)
+
+
+####################################################################################################################
+# Login views                                                                                                      #
+####################################################################################################################
 
 
 #
@@ -31,7 +59,8 @@ INVALID_INPUT = "Invalid Input"
 #     4) if email doesn't exist, show registration field
 #
 
-
+@require_POST
+@require_logged_out
 def check_account_exists(request):
     """
     Request will be originated from login phase one.
@@ -46,27 +75,27 @@ def check_account_exists(request):
     return JsonResponse({"status": "fail", "reason": INVALID_INPUT})
 
 
+@require_POST
+@require_logged_out
 def process_login(request):
     """
     Login phase two when email exists
     """
-    if request.method != "POST":  # If reached incorrectly
-        return HttpResponseNotAllowed(permitted_methods=["POST"])
-    form = LoginForm(request,request.POST)
+    form = LoginForm(request, request.POST)
     if form.is_valid():
         user = form.user
         login(request, user)
     else:
-        request.session['error_message'] = INCORRECT_CREDENTIALS
+        request.session[ERROR_MESSAGE] = INCORRECT_CREDENTIALS
         if settings.DEBUG:
-            print("Debug: ",form.errors)
-        request.session['login_form'] = request.POST
-    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+            print("Debug: ", form.errors)
+        request.session[utils.LOGIN_FORM_DATA] = request.POST
+    return redirect_to_origin(request)
 
 
+@require_POST
+@require_logged_out
 def process_registration(request):
-    if request.method != "POST":
-        return HttpResponseNotAllowed(permitted_methods=["POST"])
     form = RegistrationForm(request.POST)
     if form.is_valid():
         customer = Customer.create(
@@ -76,20 +105,40 @@ def process_registration(request):
             firstname=form.cleaned_data.get("name")
         )
     else:
-        request.session['error_message'] = INVALID_INPUT
-        request.session['registration_form'] = request.POST
-    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+        request.session[ERROR_MESSAGE] = INVALID_INPUT
+        request.session[utils.REGISTRATION_FORM_DATA] = request.POST
+    return redirect_to_origin(request)
+
 
 def logout_view(request):
     logout(request)
+
     return HttpResponseRedirect("/")
-def index(request):
-    context = {'error_message': request.session.get('error_message', ""),
-               'login_form': LoginForm(request.session.get('login_form')),
-               'user': request.user if request.user is not None else "",
-               'registration_form': RegistrationForm(request.session.get('registration_form'))}
-    print(request.user)
-    request.session.pop('login_form', None)
-    request.session.pop('registration_form', None)
-    request.session.pop('error_message', None)
-    return render(request, 'website/ecommerce/index.html', context)
+
+
+####################################################################################################################
+# Account Views                                                                                                    #
+####################################################################################################################
+
+@customer_login_required
+def my_account(request):
+    context = get_context(request)
+    context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
+    context['customer'] = Customer.objects.get(user=request.user)
+    context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)
+    return render(request,'website/core/my_account.html', context=context)
+
+
+@customer_login_required
+@require_POST
+def process_feedback(request):
+    form = FeedbackForm(request.POST)
+    if form.is_valid():
+        customer = Customer.objects.get(user=request.user)
+        form.save_feedback(customer)
+    else:
+        request.session[ERROR_MESSAGE] = INVALID_INPUT
+    return redirect_to_origin(request)
+
+
+
