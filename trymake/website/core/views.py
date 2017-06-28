@@ -11,30 +11,30 @@ from trymake.apps.orders_management.models import Order
 
 from trymake.website.core import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm
-from trymake.website.core.utils import get_context, ERROR_MESSAGE
+from trymake.website.core.utils import get_context, redirect_to_origin
 from website.core.decorators import require_logged_out, customer_login_required
 
-############################
-# Constants ################
-############################
 
-
-
-###########################
-# Error Messages ##########
-###########################
-
-INCORRECT_CREDENTIALS = "Incorrect username or password"
-INVALID_INPUT = "Invalid Input"
-
-
-def redirect_to_origin(request):
-    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
-###########################
+#########################################################
+#                                                       #
+# Every template in the core segment of trymake has     #
+# few common context data                               #
+#                                                       #
+# They are:                                             #
+# 1) Message                                            #
+# 2) Error Message                                      #
+# 3) Login Form                                         #
+# 4) Registration Form                                  #
+# 5) Users                                              #
+#                                                       #
+# The context name for them can be referenced from      #
+# trymake.website.core.utils                            #
+#                                                       #
+#########################################################
 
 
 def index(request):
-    context = {ERROR_MESSAGE: request.session.get('error_message', ""),
+    context = {utils.ERROR_MESSAGE: request.session.get('error_message', ""),
                'login_form': LoginForm(request.session.get('login_form_data')),
                'user': request.user if request.user.is_authenticated() is not None else "",
                'registration_form': RegistrationForm(request.session.get('registration_form_data')),
@@ -72,7 +72,7 @@ def check_account_exists(request):
             return JsonResponse({"status": "OK", "exists": True})
         else:
             return JsonResponse({"status": "OK", "exists": False})
-    return JsonResponse({"status": "fail", "reason": INVALID_INPUT})
+    return JsonResponse({"status": "fail", "reason": utils.INVALID_INPUT})
 
 
 @require_POST
@@ -86,7 +86,7 @@ def process_login(request):
         user = form.user
         login(request, user)
     else:
-        request.session[ERROR_MESSAGE] = INCORRECT_CREDENTIALS
+        request.session[utils.ERROR_MESSAGE] = utils.INCORRECT_CREDENTIALS
         if settings.DEBUG:
             print("Debug: ", form.errors)
         request.session[utils.LOGIN_FORM_DATA] = request.POST
@@ -105,7 +105,7 @@ def process_registration(request):
             firstname=form.cleaned_data.get("name")
         )
     else:
-        request.session[ERROR_MESSAGE] = INVALID_INPUT
+        request.session[utils.ERROR_MESSAGE] = utils.INVALID_INPUT
         request.session[utils.REGISTRATION_FORM_DATA] = request.POST
     return redirect_to_origin(request)
 
@@ -120,13 +120,14 @@ def logout_view(request):
 # Account Views                                                                                                    #
 ####################################################################################################################
 
+
 @customer_login_required
 def my_account(request):
     context = get_context(request)
     context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
     context['customer'] = Customer.objects.get(user=request.user)
     context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)
-    return render(request,'website/core/my_account.html', context=context)
+    return render(request, 'website/core/my_account.html', context=context)
 
 
 @customer_login_required
@@ -137,8 +138,5 @@ def process_feedback(request):
         customer = Customer.objects.get(user=request.user)
         form.save_feedback(customer)
     else:
-        request.session[ERROR_MESSAGE] = INVALID_INPUT
+        request.session[utils.ERROR_MESSAGE] = utils.INVALID_INPUT
     return redirect_to_origin(request)
-
-
-

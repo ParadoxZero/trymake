@@ -4,8 +4,20 @@
 #   
 #   Copyright (C) 2017 www.trymake.com
 #
+from django.http import HttpResponseRedirect
 
 from website.core.forms import LoginForm, RegistrationForm
+
+###########################
+# Error Messages ##########
+###########################
+
+INCORRECT_CREDENTIALS = "Incorrect username or password"
+INVALID_INPUT = "Invalid Input"
+
+############################
+# Constants ################
+############################
 
 ERROR_MESSAGE = 'error_message'
 MESSAGE = 'message'
@@ -14,6 +26,10 @@ REGISTRATION_FORM = "registration_form"
 USER = "user"
 LOGIN_FORM_DATA = "login_form_data"
 REGISTRATION_FORM_DATA = "registration_form_data"
+
+
+def redirect_to_origin(request):
+    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
 def get_context(request):
