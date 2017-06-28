@@ -1,6 +1,6 @@
-Error: {{ error_message }} <br>
+{% if error_message %}Error: {{ error_message }} <br>  {% endif %}
 
-Hi: {{ user }}
+{% if user %}Hi:  {{ user }} {% endif %}
 
 <form method="post" action="{% url "core:login" %}">
     {{ login_form.non_field_errors }}

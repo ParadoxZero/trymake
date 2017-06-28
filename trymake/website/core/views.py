@@ -12,52 +12,45 @@ from trymake.apps.orders_management.models import Order
 from trymake.website.core import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm
 from trymake.website.core.utils import get_context, redirect_to_origin
-from website.core.decorators import require_logged_out, customer_login_required
+from trymake.website.core.decorators import require_logged_out, customer_login_required
 
 
-#########################################################
-#                                                       #
-# Every template in the core segment of trymake has     #
-# few common context data                               #
-#                                                       #
-# They are:                                             #
-# 1) Message                                            #
-# 2) Error Message                                      #
-# 3) Login Form                                         #
-# 4) Registration Form                                  #
-# 5) Users                                              #
-#                                                       #
-# The context name for them can be referenced from      #
-# trymake.website.core.utils                            #
-#                                                       #
-#########################################################
+#################################################################################
+# Core website Views                                                            #
+# ----------------------------------------------------------------------------- #
+# Every template in the core segment has                                        #
+# few common context data                                                       #
+#                                                                               #
+# They are:                                                                     #
+# 1) Message                                                                    #
+# 2) Error Message                                                              #
+# 3) Login Form                                                                 #
+# 4) Registration Form                                                          #
+# 5) Users                                                                      #
+#                                                                               #
+# The context name for them can be referenced from                              #
+# trymake.website.core.utils                                                    #
+#                                                                               #
+#################################################################################
 
 
 def index(request):
-    context = {utils.ERROR_MESSAGE: request.session.get('error_message', ""),
-               'login_form': LoginForm(request.session.get('login_form_data')),
-               'user': request.user if request.user.is_authenticated() is not None else "",
-               'registration_form': RegistrationForm(request.session.get('registration_form_data')),
-               'address_form': AddressForm()}
-    request.session.pop('login_form_data', None)
-    request.session.pop('registration_form_data', None)
-    request.session.pop('error_message', None)
-    print()
+    context = get_context(request)
+    context["address_form"] = AddressForm()
     return render(request, 'website/core/index.html', context)
 
 
-####################################################################################################################
-# Login views                                                                                                      #
-####################################################################################################################
-
-
-#
-# Trymake Login flow in four phases/parts:
-#     1) user enters email
-#     2) if email exists in database, show password field
-#     3) email exists, but not verified, show resend verification link
-#     4) if email doesn't exist, show registration field
-#
+#################################################################################
+# Login views                                                                   #
+# ----------------------------------------------------------------------------- #
+#                                                                               #
+# Trymake Login flow in four phases/parts:                                      #
+#     1) user enters email                                                      #
+#     2) if email exists in database, show password field                       #
+#     3) email exists, but not verified, show resend verification link          #
+#     4) if email doesn't exist, show registration field                        #
+#                                                                               #
+#################################################################################
 
 @require_POST
 @require_logged_out
@@ -116,9 +109,18 @@ def logout_view(request):
     return HttpResponseRedirect("/")
 
 
-####################################################################################################################
-# Account Views                                                                                                    #
-####################################################################################################################
+#################################################################################
+# Account Views                                                                 #
+# ----------------------------------------------------------------------------- #
+#                                                                               #
+# Consists of the following pages which will load templates:                    #
+#                                                                               #
+#   1) My Account page                                                          #
+#   2) My orders                                                                #
+#   3) Add or edit my Address - AddressForm                                     #
+#   4) Edit Profile - UpdateProfileForm(),ChangePasswordForm()                  #
+#                                                                               #
+#################################################################################
 
 
 @customer_login_required

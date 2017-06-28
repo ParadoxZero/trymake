@@ -6,7 +6,7 @@
 #
 from django.http import HttpResponseRedirect
 
-from website.core.forms import LoginForm, RegistrationForm
+from trymake.website.core.forms import LoginForm, RegistrationForm
 
 ###########################
 # Error Messages ##########

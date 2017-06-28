@@ -87,7 +87,7 @@ class Country(models.Model):
 
 
 class State(models.Model):
-    code = models.CharField(max_length=2,unique=True, db_index=True)
+    code = models.CharField(max_length=5,unique=True, db_index=True)
     country = models.ForeignKey(Country, db_index=True)
     name = models.CharField(max_length=500)
 
