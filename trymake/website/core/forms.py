@@ -76,22 +76,16 @@ class LoginForm(forms.Form):
         if username is not None and password:
             self.user = authenticate(self.request, username=username, password=password)
             if self.user is None:
-                self.add_error(
-                    password,
-                    forms.ValidationError(
-                        self.ERROR_MESSAGES['invalid_login'],
-                        code='invalid_login',
-                        params={'username': self.username_field.verbose_name},
-                    )
+                raise forms.ValidationError(
+                    self.ERROR_MESSAGES['invalid_login'],
+                    code='invalid_login',
                 )
-
             try:
                 customer = Customer.objects.get(user=self.user)
             except Customer.DoesNotExist:
                 raise forms.ValidationError(
                     self.ERROR_MESSAGES['invalid_login'],
                     code='invalid_login',
-                    params={'username': self.username_field.verbose_name},
                 )
             self.customer_id = customer.id
         return self.cleaned_data

@@ -88,7 +88,7 @@ def process_login(request):
     if form.is_valid():
         user = form.user
         login(request, user)
-        request.session[utils.SESSION_CUSTOMER_ID] = form.customer_id
+        request.session[utils.SESSION_CUSTOMER_ID] = str(form.customer_id)
     else:
         request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
         if settings.DEBUG:
@@ -109,6 +109,7 @@ def process_registration(request):
             firstname=form.cleaned_data.get("name")
         )
     else:
+        print(form.errors)
         request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
         request.session[utils.KEY_REGISTRATION_FORM_DATA] = request.POST
     return redirect_to_origin(request)
@@ -171,5 +172,7 @@ def process_address_add(request):
         )
         address.save()
     else:
+        print(form.errors)
         request.session[utils.KEY_ERROR_MESSAGE]= utils.ERROR_INVALID_ADDRESS
-        #TODO
+        request.session[utils.KEY_ADDRESS_FORM_DATA] = request.POST
+    return redirect_to_origin(request)
