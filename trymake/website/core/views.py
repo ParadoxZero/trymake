@@ -89,11 +89,13 @@ def process_login(request):
         user = form.user
         login(request, user)
         request.session[utils.SESSION_CUSTOMER_ID] = str(form.customer_id)
+        print(str(form.customer_id))
     else:
         request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
         if settings.DEBUG:
             print("Debug: ", form.errors)
         request.session[utils.KEY_LOGIN_FORM_DATA] = request.POST
+        print(request.session[utils.KEY_LOGIN_FORM_DATA])
     return redirect_to_origin(request)
 
 

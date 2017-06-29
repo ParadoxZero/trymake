@@ -61,7 +61,7 @@ def get_context(request):
     return {
         KEY_MESSAGE: request.session.pop(KEY_MESSAGE, None),
         KEY_ERROR_MESSAGE: request.session.pop(KEY_ERROR_MESSAGE, None),
-        KEY_LOGIN_FORM: LoginForm(request.session.get(KEY_LOGIN_FORM_DATA)),
-        KEY_REGISTRATION_FORM: RegistrationForm(request.session.get(KEY_REGISTRATION_FORM_DATA)),
+        KEY_LOGIN_FORM: LoginForm(request.session.pop(KEY_LOGIN_FORM_DATA, None)),
+        KEY_REGISTRATION_FORM: RegistrationForm(request.session.pop(KEY_REGISTRATION_FORM_DATA, None)),
         KEY_USER: request.user if request.user.is_authenticated() else None,
     }
