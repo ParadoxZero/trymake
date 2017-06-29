@@ -19,7 +19,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for c in pycountry.countries:
-            if c.alpha_2=='IN':
+            self.stdout.write(
+                "Inserting states into database for country: {0}({1})...".format(c.name,c.alpha_2),
+                ending=""
+            )
+            if Country.objects.filter(code=c.alpha_2).exists():
+                self.stdout.write("Failed")
+                self.stderr.write("{0} already exists in database...\n"
+                                  "Skipping over to next.".format(c.name))
                 continue
             country = Country()
             country.name = c.name
@@ -33,3 +40,5 @@ class Command(BaseCommand):
                 s.name = state.name
                 s.country = country
                 s.save()
+            self.stdout.write("OK")
+        self.stdout.write("")
