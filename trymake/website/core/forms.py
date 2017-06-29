@@ -31,6 +31,10 @@ class EnterEmailForm(forms.Form):
 
 
 class LoginForm(forms.Form):
+    ERROR_MESSAGES = {
+        "invalid_login":"Invalid credentials"
+    }
+
     email = forms.EmailField(
         max_length=254,
         widget=forms.EmailInput(
@@ -62,6 +66,7 @@ class LoginForm(forms.Form):
         """
         self.request = request
         self.user = None
+        self.customer_id = None
         super(LoginForm, self).__init__(*args, **kwargs)
 
     def clean(self):
@@ -74,16 +79,21 @@ class LoginForm(forms.Form):
                 self.add_error(
                     password,
                     forms.ValidationError(
-                        self.error_messages['invalid_login'],
+                        self.ERROR_MESSAGES['invalid_login'],
                         code='invalid_login',
                         params={'username': self.username_field.verbose_name},
                     )
                 )
+
+            try:
+                customer = Customer.objects.get(user=self.user)
+            except Customer.DoesNotExist:
                 raise forms.ValidationError(
-                    self.error_messages['invalid_login'],
+                    self.ERROR_MESSAGES['invalid_login'],
                     code='invalid_login',
                     params={'username': self.username_field.verbose_name},
                 )
+            self.customer_id = customer.id
         return self.cleaned_data
 
 

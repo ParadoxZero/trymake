@@ -16,7 +16,7 @@ from django.views.decorators.http import require_POST
 
 from trymake import settings
 from trymake.apps.complaints.models import Complaint
-from trymake.apps.customer.models import Customer
+from trymake.apps.customer.models import Customer, Address
 from trymake.apps.orders_management.models import Order
 
 from trymake.website.core import utils
@@ -75,7 +75,7 @@ def check_account_exists(request):
             return JsonResponse({"status": "OK", "exists": True})
         else:
             return JsonResponse({"status": "OK", "exists": False})
-    return JsonResponse({"status": "fail", "reason": utils.INVALID_INPUT})
+    return JsonResponse({"status": "fail", "reason": utils.ERROR_INVALID_INPUT})
 
 
 @require_POST
@@ -88,11 +88,12 @@ def process_login(request):
     if form.is_valid():
         user = form.user
         login(request, user)
+        request.session[utils.SESSION_CUSTOMER_ID] = form.customer_id
     else:
-        request.session[utils.ERROR_MESSAGE] = utils.INCORRECT_CREDENTIALS
+        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
         if settings.DEBUG:
             print("Debug: ", form.errors)
-        request.session[utils.LOGIN_FORM_DATA] = request.POST
+        request.session[utils.KEY_LOGIN_FORM_DATA] = request.POST
     return redirect_to_origin(request)
 
 
@@ -108,8 +109,8 @@ def process_registration(request):
             firstname=form.cleaned_data.get("name")
         )
     else:
-        request.session[utils.ERROR_MESSAGE] = utils.INVALID_INPUT
-        request.session[utils.REGISTRATION_FORM_DATA] = request.POST
+        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
+        request.session[utils.KEY_REGISTRATION_FORM_DATA] = request.POST
     return redirect_to_origin(request)
 
 
@@ -150,5 +151,25 @@ def process_feedback(request):
         customer = Customer.objects.get(user=request.user)
         form.save_feedback(customer)
     else:
-        request.session[utils.ERROR_MESSAGE] = utils.INVALID_INPUT
+        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
     return redirect_to_origin(request)
+
+
+@customer_login_required
+@require_POST
+def process_address_add(request):
+    form = AddressForm(request.POST)
+    if form.is_valid():
+        address = Address(
+            name=form.cleaned_data['name'],
+            address=form.cleaned_data['address'],
+            landmark=form.cleaned_data['landmark'],
+            city=form.cleaned_data['city'],
+            pincode=form.cleaned_data['pincode'],
+            phone=form.cleaned_data['phone'],
+            customer_id=request.session[utils.SESSION_CUSTOMER_ID]
+        )
+        address.save()
+    else:
+        request.session[utils.KEY_ERROR_MESSAGE]= utils.ERROR_INVALID_ADDRESS
+        #TODO
