@@ -22,8 +22,11 @@
             };
             $http.post('/check_account' , param)
                 .then(onSuccess , onReject);
-        }
+        };
+
+
 
     };
     app.controller('loginEmail' ,  loginEmail);
+
 }());

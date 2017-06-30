@@ -12,16 +12,16 @@
 <body ng-app="login">
     <h1>Login</h1>
     <div ng-controller="loginEmail">
-        <h1>{{error}}</h1>
+        <h4>{{error}}</h4>
+        <h4>{{ user }}</h4>
         <form ng-submit="check_mail(email)">
             {% endverbatim %}
             {% csrf_token %}
             {% verbatim %}
             <input type="email" placeholder="Enter Email" ng-model="email" id="id_email" name="email">
-            <input type="submit">
+            <input type="submit" ng-hide="user">
         </form>
         <form ng-show="user" ng-submit="login(email,password)">
-            <input type="text" placeholder="Enter Email" ng-model="email" id="id_email" name="email">
             <input type="text" placeholder="Enter password" ng-model="password" id="id_password" name="password">
             <input type="submit">
         </form>
