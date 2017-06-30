@@ -48,7 +48,7 @@ def index(request):
     context[utils.KEY_LOGIN_FORM] = LoginForm()
     context["address_form"] = AddressForm()
 
-    return render(request, 'website/core/index.html', context)
+    return render(request, 'website/core/login.html', context)
 
 
 #################################################################################

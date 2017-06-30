@@ -26,7 +26,6 @@ class EnterEmailForm(forms.Form):
             'autofocus': True,
             'placeholder': "Enter Email"
         }),
-        validators=[email_doesnt_exist]
     )
 
 
