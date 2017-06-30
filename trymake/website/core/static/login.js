@@ -24,7 +24,20 @@
                 .then(onSuccess , onReject);
         };
 
-
+        $scope.login = function (email , password) {
+            var param = {
+                'email' : email,
+                'password' : password
+            };
+            var onSuccess = function (response) {
+                $scope.msg = "successfully logged in";
+            };
+            var onReject = function (error) {
+                $scope.error = "Incorrect password";
+            };
+            $http.post('/login' , param)
+                .then(onSuccess , onReject);
+        }
 
     };
     app.controller('loginEmail' ,  loginEmail);
