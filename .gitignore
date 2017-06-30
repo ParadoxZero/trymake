@@ -204,3 +204,13 @@ ENV/
 db.sqlite3
 .idea/
 *migratinos*
+trymake/apps/commons/migrations/0001_initial.py
+trymake/apps/complaints/migrations/0001_initial.py
+trymake/apps/coupon/migrations/0001_initial.py
+trymake/apps/customer/migrations/0001_initial.py
+trymake/apps/delivery/migrations/0001_initial.py
+trymake/apps/orders_management/migrations/0001_initial.py
+trymake/apps/product/migrations/0001_initial.py
+trymake/apps/support_staff/migrations/0001_initial.py
+trymake/apps/user_interactions/migrations/0001_initial.py
+trymake/apps/vendor/migrations/0001_initial.py
