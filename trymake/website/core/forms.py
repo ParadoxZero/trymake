@@ -56,7 +56,8 @@ class LoginForm(forms.Form):
 
     remember_me = forms.BooleanField(
         label="Remember me?",
-        initial=True
+        initial=True,
+        required=False
     )
 
     def __init__(self, request=None, *args, **kwargs):

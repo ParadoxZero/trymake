@@ -9,12 +9,10 @@ Proprietary and confidential
 """
 
 from django.contrib.auth import login, logout
-from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_POST
 
-from trymake import settings
 from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer, Address
 from trymake.apps.orders_management.models import Order
@@ -46,7 +44,10 @@ from trymake.website.core.decorators import require_logged_out, customer_login_r
 
 def index(request):
     context = get_context(request)
+    context[utils.KEY_REGISTRATION_FORM] = RegistrationForm()
+    context[utils.KEY_LOGIN_FORM] = LoginForm()
     context["address_form"] = AddressForm()
+
     return render(request, 'website/core/index.html', context)
 
 
@@ -64,7 +65,7 @@ def index(request):
 
 @require_POST
 @require_logged_out
-def check_account_exists(request):
+def check_account_exists(request):  # AJAX
     """
     Request will be originated from login phase one.
     """
@@ -80,28 +81,30 @@ def check_account_exists(request):
 
 @require_POST
 @require_logged_out
-def process_login(request):
+def process_login(request):  # AJAX
     """
     Login phase two when email exists
     """
     form = LoginForm(request, request.POST)
+    response = dict()
     if form.is_valid():
         user = form.user
         login(request, user)
+        if not form.cleaned_data['remember_me']:
+            request.session.set_expiry(0)
         request.session[utils.SESSION_CUSTOMER_ID] = str(form.customer_id)
-        print(str(form.customer_id))
+        response[utils.KEY_STATUS] = utils.STATUS_OKAY
     else:
-        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
-        if settings.DEBUG:
-            print("Debug: ", form.errors)
-        request.session[utils.KEY_LOGIN_FORM_DATA] = request.POST
-        print(request.session[utils.KEY_LOGIN_FORM_DATA])
-    return redirect_to_origin(request)
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
+        response[utils.KEY_LOGIN_FORM] = str(form)
+    return JsonResponse(response)
 
 
 @require_POST
 @require_logged_out
-def process_registration(request):
+def process_registration(request):  # AJAX
+    response = dict()
     form = RegistrationForm(request.POST)
     if form.is_valid():
         customer = Customer.create(
@@ -110,17 +113,21 @@ def process_registration(request):
             password=str(form.cleaned_data.get("password")),
             firstname=form.cleaned_data.get("name")
         )
+        response[utils.KEY_STATUS] = utils.STATUS_OKAY
     else:
-        print(form.errors)
-        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-        request.session[utils.KEY_REGISTRATION_FORM_DATA] = request.POST
-    return redirect_to_origin(request)
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
+        response[utils.KEY_REGISTRATION_FORM] = str(form)
+    return JsonResponse(response)
 
 
-def logout_view(request):
+def logout_view(request):  # AJAX
     logout(request)
+    request.session.flush()
 
-    return HttpResponseRedirect("/")
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY
+    })
 
 
 #################################################################################
@@ -138,7 +145,7 @@ def logout_view(request):
 
 
 @customer_login_required
-def my_account(request):
+def my_account(request):  # Template
     context = get_context(request)
     context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
     context['customer'] = Customer.objects.get(user=request.user)
@@ -148,7 +155,7 @@ def my_account(request):
 
 @customer_login_required
 @require_POST
-def process_feedback(request):
+def process_feedback(request):  # AJAX
     form = FeedbackForm(request.POST)
     if form.is_valid():
         customer = Customer.objects.get(user=request.user)
@@ -160,7 +167,7 @@ def process_feedback(request):
 
 @customer_login_required
 @require_POST
-def process_address_add(request):
+def process_address_add(request):  # AJAX
     form = AddressForm(request.POST)
     if form.is_valid():
         address = Address(
@@ -175,6 +182,5 @@ def process_address_add(request):
         address.save()
     else:
         print(form.errors)
-        request.session[utils.KEY_ERROR_MESSAGE]= utils.ERROR_INVALID_ADDRESS
-        request.session[utils.KEY_ADDRESS_FORM_DATA] = request.POST
+        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_ADDRESS
     return redirect_to_origin(request)
