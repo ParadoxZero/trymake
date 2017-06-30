@@ -1,6 +1,11 @@
-#
-#   Created by Sidhin S Thomas
-#   Date: 28/06/17
-#   
-#   Copyright (C) 2017 www.trymake.com
-#
+"""
+
+Author: Sidhin S Thomas (sidhin@trymake.com)
+
+Copyright (c) 2017 Sibibia Technologies Pvt Ltd
+All Rights Reserved
+
+Unauthorized copying of this file, via any medium is strictly prohibited
+Proprietary and confidential
+
+"""

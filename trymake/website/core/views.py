@@ -2,15 +2,19 @@
 
 Author: Sidhin S Thomas (sidhin@trymake.com)
 
-Copyright (c) 2017 Trymake Inc
+Copyright (c) 2017 Sibibia Technologies Pvt Ltd
 All Rights Reserved
+
 Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
+
 """
 
 from django.contrib.auth import login, logout
-from django.http import JsonResponse
+from django.db import IntegrityError
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from trymake.apps.complaints.models import Complaint
@@ -69,10 +73,12 @@ def check_account_exists(request):  # AJAX
     """
     Request will be originated from login phase one.
     """
+    print(request.body)
     response = dict()
     form = EnterEmailForm(request.POST)
     if form.is_valid():
         response[utils.KEY_STATUS] = utils.STATUS_OKAY
+        response[utils.KEY_EMAIL] = form.cleaned_data['email']
         if Customer.objects.filter(email=form.cleaned_data['email']).exists():
             response[utils.KEY_EMAIL_REGISTERED] = True
         else:
@@ -80,7 +86,7 @@ def check_account_exists(request):  # AJAX
     else:
         response[utils.KEY_STATUS] = utils.STATUS_ERROR
         response[utils.KEY_ERROR_MESSAGE] = form.errors
-        response[utils.KEY_FORM] = str(form)
+        response[utils.KEY_FORM] = form.as_table()
     return JsonResponse(response)
 
 
@@ -102,7 +108,7 @@ def process_login(request):  # AJAX
     else:
         response[utils.KEY_STATUS] = utils.STATUS_ERROR
         response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
-        response[utils.KEY_LOGIN_FORM] = str(form)
+        response[utils.KEY_LOGIN_FORM] = form.as_table()
     return JsonResponse(response)
 
 
@@ -122,7 +128,7 @@ def process_registration(request):  # AJAX
     else:
         response[utils.KEY_STATUS] = utils.STATUS_ERROR
         response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-        response[utils.KEY_REGISTRATION_FORM] = str(form)
+        response[utils.KEY_REGISTRATION_FORM] = form.as_table()
     return JsonResponse(response)
 
 
@@ -130,9 +136,10 @@ def logout_view(request):  # AJAX
     logout(request)
     request.session.flush()
 
-    return JsonResponse({
-        utils.KEY_STATUS: utils.STATUS_OKAY
-    })
+    # It is necessary to redirect so that any settings or any information
+    # related to the previous user which may have existed in the javascript
+    # Or cookies in general is flushed and removed.
+    return HttpResponseRedirect(reverse("core:index"))
 
 
 #################################################################################
@@ -158,23 +165,79 @@ def my_account(request):  # Template
     return render(request, 'website/core/my_account.html', context=context)
 
 
+# ---------------------- #
+# Feedback Forms Related #
+# ---------------------- #
+
+@customer_login_required
+@require_POST
+def get_feedback_form(request):
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_FORM: FeedbackForm().as_table()
+    })
+
+
 @customer_login_required
 @require_POST
 def process_feedback(request):  # AJAX
     response = dict()
     form = FeedbackForm(request.POST)
     if form.is_valid():
+        response[utils.KEY_STATUS] = utils.STATUS_OKAY
         customer = Customer.objects.get(user=request.user)
         form.save_feedback(customer)
     else:
-        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-    return redirect_to_origin(request)
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
+        response[utils.KEY_FORM] = form.as_table()
+    return JsonResponse(response)
 
 
+# -------------------- #
+# Address Form Related #
+# -------------------- #
+
+# If the request contains the name of an address
+# The form will return form with the details of
+# address pre-filled otherwise it will return a
+# blank form.
+@customer_login_required
+@require_POST
+def get_address_form(request):  # AJAX
+    response = dict()
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    if utils.KEY_ADDRESS_NAME in request.POST:
+        address_list = Address.objects.filter(name=request.POST[utils.KEY_ADDRESS_NAME])
+        if len(address_list) > 0:
+            address = address_list.first()  # type:Address
+            form = AddressForm(initial={
+                "name": address.name,
+                "phone": address.phone,
+                "address": address.address,
+                "pincode": address.pincode,
+                "landmark": address.landmark,
+                "city": address.city,
+                "state": address.state
+            })
+            response[utils.KEY_FORM] = form.as_table()
+        else:
+            response[utils.KEY_STATUS] = utils.STATUS_ERROR
+            response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ADDRESS_NOT_FOUND
+            response[utils.KEY_ADDRESS_NAME] = request.POST[utils.KEY_ADDRESS_NAME]
+    else:
+        response[utils.KEY_FORM] = AddressForm().as_table()
+    return JsonResponse(response)
+
+
+# Only handles creation of new address
+# In case the given address name already exists.
 @customer_login_required
 @require_POST
 def process_address_add(request):  # AJAX
+    response = dict()
     form = AddressForm(request.POST)
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
     if form.is_valid():
         address = Address(
             name=form.cleaned_data['name'],
@@ -185,8 +248,15 @@ def process_address_add(request):  # AJAX
             phone=form.cleaned_data['phone'],
             customer_id=request.session[utils.SESSION_CUSTOMER_ID]
         )
-        address.save()
+        response[utils.KEY_ADDRESS_NAME] = address.name
+        try:
+            address.save()
+        except IntegrityError:
+            response[utils.KEY_STATUS] = utils.STATUS_ERROR
+            response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ADDRESS__NAME_EXISTS
+            response[utils.KEY_FORM] = form.as_table()
     else:
-        print(form.errors)
-        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_ADDRESS
-    return redirect_to_origin(request)
+        response[utils] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_ADDRESS
+        response[utils.KEY_FORM] = form.as_table()
+    return JsonResponse(response)

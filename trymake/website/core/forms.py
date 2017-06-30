@@ -2,11 +2,14 @@
 
 Author: Sidhin S Thomas (sidhin@trymake.com)
 
-Copyright (c) 2017 Trymake Inc
+Copyright (c) 2017 Sibibia Technologies Pvt Ltd
 All Rights Reserved
+
 Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
+
 """
+
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password

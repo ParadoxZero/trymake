@@ -2,10 +2,12 @@
 
 Author: Sidhin S Thomas (sidhin@trymake.com)
 
-Copyright (c) 2017 Trymake Inc
+Copyright (c) 2017 Sibibia Technologies Pvt Ltd
 All Rights Reserved
+
 Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
+
 """
 
 import uuid
@@ -107,7 +109,7 @@ class State(models.Model):
 
 class Address(models.Model):
     customer = models.ForeignKey(Customer, db_index=True, on_delete=models.SET_NULL, null=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=250)
     address = models.TextField()
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
@@ -124,7 +126,7 @@ class Address(models.Model):
     default = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = (('default','customer'),)
+        unique_together = (('default','customer'),('customer','name'))
 
     def __str__(self):
         return "%s %s : %s - %s"%(self.customer.user.first_name,

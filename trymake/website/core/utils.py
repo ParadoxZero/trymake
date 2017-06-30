@@ -2,11 +2,15 @@
 
 Author: Sidhin S Thomas (sidhin@trymake.com)
 
-Copyright (c) 2017 Trymake Inc
+Copyright (c) 2017 Sibibia Technologies Pvt Ltd
 All Rights Reserved
+
 Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
+
 """
+
+
 from django.http import HttpResponseRedirect
 
 
@@ -43,6 +47,10 @@ KEY_STATUS = 'status'
 KEY_ERROR_MESSAGE = 'error_message'
 KEY_MESSAGE = 'message'
 KEY_USER = "user"
+KEY_EMAIL = "email"
+KEY_ADDRESS_NAME = "address_name"
+
+# Processing entities
 KEY_LOGIN_FORM = "login_form"
 KEY_REGISTRATION_FORM = "registration_form"
 KEY_CHECK_EMAIL_FORM = "email_check_form"
@@ -64,6 +72,8 @@ STATUS_ERROR = 'error'
 ERROR_INCORRECT_CREDENTIALS = "Incorrect username or password"
 ERROR_INVALID_INPUT = "Invalid Input"
 ERROR_INVALID_ADDRESS = "Input for address was invalid."
+ERROR_ADDRESS_NOT_FOUND = "No address found with the given name"
+ERROR_ADDRESS__NAME_EXISTS = "Address name already exists"
 
 
 def redirect_to_origin(request):
