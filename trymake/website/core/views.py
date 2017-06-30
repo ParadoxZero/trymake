@@ -47,8 +47,8 @@ def index(request):
     context[utils.KEY_REGISTRATION_FORM] = RegistrationForm()
     context[utils.KEY_LOGIN_FORM] = LoginForm()
     context["address_form"] = AddressForm()
-
-    return render(request, 'website/core/login.html', context)
+    context[utils.KEY_CHECK_EMAIL_FORM] = EnterEmailForm()
+    return render(request, 'website/core/index.html', context)
 
 
 #################################################################################
@@ -79,7 +79,8 @@ def check_account_exists(request):  # AJAX
             response[utils.KEY_EMAIL_REGISTERED] = False
     else:
         response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] =  utils.ERROR_INVALID_INPUT
+        response[utils.KEY_ERROR_MESSAGE] = form.errors
+        response[utils.KEY_FORM] = str(form)
     return JsonResponse(response)
 
 
@@ -160,6 +161,7 @@ def my_account(request):  # Template
 @customer_login_required
 @require_POST
 def process_feedback(request):  # AJAX
+    response = dict()
     form = FeedbackForm(request.POST)
     if form.is_valid():
         customer = Customer.objects.get(user=request.user)

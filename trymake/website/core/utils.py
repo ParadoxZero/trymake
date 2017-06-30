@@ -45,6 +45,8 @@ KEY_MESSAGE = 'message'
 KEY_USER = "user"
 KEY_LOGIN_FORM = "login_form"
 KEY_REGISTRATION_FORM = "registration_form"
+KEY_CHECK_EMAIL_FORM = "email_check_form"
+KEY_FORM = "form"
 
 KEY_EMAIL_REGISTERED = 'email_registered'
 

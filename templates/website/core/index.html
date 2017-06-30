@@ -21,3 +21,11 @@
 <table>
 {{ address_form }}
 </table>
+
+<table>
+    <form method="post" action="{% url "core:check_account" %}">
+        {% csrf_token %}
+        {{ email_check_form }}
+        <tr><th></th><td><input type="submit"></td></tr>
+    </form>
+</table>
