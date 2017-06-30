@@ -13,16 +13,37 @@
     <h1>Login</h1>
     <div ng-controller="loginEmail">
         <h4>{{error}}</h4>
-        <h4>{{ user }}</h4>
         <form ng-submit="check_mail(email)">
             {% endverbatim %}
+
             {% csrf_token %}
+
             {% verbatim %}
-            <input type="email" placeholder="Enter Email" ng-model="email" id="id_email" name="email">
+            <div ng-show="reg.status == 'ok'">
+                <h3>You have successfully registered with us... Kindly Login.</h3>
+            </div>
+            <div ng-show="!user">
+                <h3>Enter your email to continue..</h3>
+            </div>
+            <div ng-show="!user.email_registered && user">
+                <h3>You are not registered with us.. </h3>
+            </div>
+            <div ng-show="user.email_registered">
+                <h3>Enter your password</h3>
+            </div>
+            <input type="email" ng-show="!user || user.email_registered" placeholder="Enter Email" ng-model="email" id="id_email" name="email">
             <input type="submit" ng-hide="user">
         </form>
-        <form ng-show="user" ng-submit="login(email,password)">
-            <input type="text" placeholder="Enter password" ng-model="password" id="id_password" name="password">
+        <form ng-show="user.email_registered" ng-submit="login(email,password)">
+            <input type="password" placeholder="Enter password" ng-model="password" id="id_password" name="password">
+            <input type="submit">
+        </form>
+        <form ng-hide="!user || user.email_registered" ng-submit="register()">
+            <input type="text" name="name" ng-model="name" autofocus="" placeholder="Enter Name" required="" id="id_name"><br/>
+            <input type="text" name="phone" ng-model="phone" placeholder="Enter Phone Number" required="" id="id_phone"><br/>
+            <input type="text" name="email" ng-model="email" placeholder="Enter Email" required="" id="id_email"><br/>
+            <input type="password" name="password" ng-model="password" placeholder="Enter password" required="" id="id_password"><br/>
+            <input type="password" name="password_verify" ng-model="password_verify" placeholder="Repeat password" required="" id="id_password_verify"><br/>
             <input type="submit">
         </form>
     </div>

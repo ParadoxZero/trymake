@@ -30,6 +30,7 @@ my_account_urls = [
 urlpatterns = [
     url(r'^$', views.index, name="index"),
     url(r'^check_account$', views.check_account_exists, name="check_account"),
+    url(r'^process_registration', views.process_registration , name="process_registration"),
     url(r'^login$', views.process_login, name="login"),
     url(r'^register$', views.process_registration, name="reg"),
     url(r'logout$', views.logout_view, name="logout"),
