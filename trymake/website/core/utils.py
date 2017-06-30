@@ -9,7 +9,6 @@ Proprietary and confidential
 """
 from django.http import HttpResponseRedirect
 
-from trymake.website.core.forms import LoginForm, RegistrationForm
 
 #################################################################################
 # CONSTANTS                                                                     #
@@ -26,6 +25,10 @@ from trymake.website.core.forms import LoginForm, RegistrationForm
 #  8) KEY_REGISTRATION_FORM                                                     #
 #  9) KEY_USER                                                                  #
 #                                                                               #
+# Constant Values                                                               #
+#                                                                               #
+#  1) STATUS_OKAY                                                               #
+#  2) STATUS_ERROR                                                              #
 #                                                                               #
 # Error Messages                                                                #
 #                                                                               #
@@ -35,14 +38,20 @@ from trymake.website.core.forms import LoginForm, RegistrationForm
 #################################################################################
 
 SESSION_CUSTOMER_ID = "customer_id"
-KEY_REGISTRATION_FORM_DATA = "registration_form_data"
-KEY_LOGIN_FORM_DATA = "login_form_data"
-KEY_ADDRESS_FORM_DATA = "address_form_data"
+
+KEY_STATUS = 'status'
 KEY_ERROR_MESSAGE = 'error_message'
 KEY_MESSAGE = 'message'
+KEY_USER = "user"
 KEY_LOGIN_FORM = "login_form"
 KEY_REGISTRATION_FORM = "registration_form"
-KEY_USER = "user"
+
+###########################
+# CONSTANT VALUES         #
+###########################
+
+STATUS_OKAY = 'ok'
+STATUS_ERROR = 'error'
 
 ###########################
 # Error Messages          #
@@ -59,9 +68,5 @@ def redirect_to_origin(request):
 
 def get_context(request):
     return {
-        KEY_MESSAGE: request.session.pop(KEY_MESSAGE, None),
-        KEY_ERROR_MESSAGE: request.session.pop(KEY_ERROR_MESSAGE, None),
-        KEY_LOGIN_FORM: LoginForm(request.session.pop(KEY_LOGIN_FORM_DATA, None)),
-        KEY_REGISTRATION_FORM: RegistrationForm(request.session.pop(KEY_REGISTRATION_FORM_DATA, None)),
         KEY_USER: request.user if request.user.is_authenticated() else None,
     }
