@@ -46,6 +46,8 @@ KEY_USER = "user"
 KEY_LOGIN_FORM = "login_form"
 KEY_REGISTRATION_FORM = "registration_form"
 
+KEY_EMAIL_REGISTERED = 'email_registered'
+
 ###########################
 # CONSTANT VALUES         #
 ###########################

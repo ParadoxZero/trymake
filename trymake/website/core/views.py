@@ -69,14 +69,18 @@ def check_account_exists(request):  # AJAX
     """
     Request will be originated from login phase one.
     """
+    response = dict()
     form = EnterEmailForm(request.POST)
     if form.is_valid():
-        exists = Customer.objects.filter(email=form.cleaned_data['email']).exists()
-        if exists:
-            return JsonResponse({"status": "OK", "exists": True})
+        response[utils.KEY_STATUS] = utils.STATUS_OKAY
+        if Customer.objects.filter(email=form.cleaned_data['email']).exists():
+            response[utils.KEY_EMAIL_REGISTERED] = True
         else:
-            return JsonResponse({"status": "OK", "exists": False})
-    return JsonResponse({"status": "fail", "reason": utils.ERROR_INVALID_INPUT})
+            response[utils.KEY_EMAIL_REGISTERED] = False
+    else:
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] =  utils.ERROR_INVALID_INPUT
+    return JsonResponse(response)
 
 
 @require_POST
