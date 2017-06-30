@@ -142,7 +142,7 @@ def my_account(request):
     context = get_context(request)
     context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
     context['customer'] = Customer.objects.get(user=request.user)
-    context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)
+    context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)[:3]
     return render(request, 'website/core/my_account.html', context=context)
 
 

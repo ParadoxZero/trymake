@@ -3,8 +3,6 @@
 {% if user %}Hi:  {{ user }} {% endif %}
 
 <form method="post" action="{% url "core:login" %}">
-    {{ login_form.non_field_errors }}
-    {{ login_form.errors }}
 {{ login_form }} <br>
     {% csrf_token %}
         <input type="submit">
@@ -12,10 +10,14 @@
 </form>
 
 ------------------------
+<table>
 <form method="post" action="{% url "core:reg" %}">
 {{ registration_form }}
         {% csrf_token %}
-    <input type="submit">
+    <tr><th></th><td><input type="submit"></td></tr>
 </form>
+</table>
 
+<table>
 {{ address_form }}
+</table>

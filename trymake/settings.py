@@ -29,7 +29,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    # 'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -128,4 +128,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+#################################################################################
+# Custom Settings                                                               #
+#################################################################################
+
 LOGIN_URL = "login"
+
+CSRF_USE_SESSIONS = True
