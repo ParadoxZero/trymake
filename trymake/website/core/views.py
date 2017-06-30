@@ -68,7 +68,7 @@ def check_account_exists(request):
     """
     Request will be originated from login phase one.
     """
-    form = EnterEmailForm(request)
+    form = EnterEmailForm(request.POST)
     if form.is_valid():
         exists = Customer.objects.filter(email=form.cleaned_data['email']).exists()
         if exists:
