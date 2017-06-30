@@ -52,7 +52,7 @@ def index(request):
     context[utils.KEY_LOGIN_FORM] = LoginForm()
     context["address_form"] = AddressForm()
     context[utils.KEY_CHECK_EMAIL_FORM] = EnterEmailForm()
-    return render(request, 'website/core/index.html', context)
+    return render(request, 'website/core/login.html', context)
 
 
 #################################################################################
@@ -73,7 +73,6 @@ def check_account_exists(request):  # AJAX
     """
     Request will be originated from login phase one.
     """
-    print(request.body)
     response = dict()
     form = EnterEmailForm(request.POST)
     if form.is_valid():
@@ -87,6 +86,7 @@ def check_account_exists(request):  # AJAX
         response[utils.KEY_STATUS] = utils.STATUS_ERROR
         response[utils.KEY_ERROR_MESSAGE] = form.errors
         response[utils.KEY_FORM] = form.as_table()
+    print(response)
     return JsonResponse(response)
 
 
@@ -239,6 +239,7 @@ def process_address_add(request):  # AJAX
     form = AddressForm(request.POST)
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
     if form.is_valid():
+        # TODO refactor it into a method in model
         address = Address(
             name=form.cleaned_data['name'],
             address=form.cleaned_data['address'],
@@ -257,6 +258,38 @@ def process_address_add(request):  # AJAX
             response[utils.KEY_FORM] = form.as_table()
     else:
         response[utils] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_ADDRESS
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
+        response[utils.KEY_FORM] = form.as_table()
+    return JsonResponse(response)
+
+
+# In case the address name doesn't exists for given user,
+# Error is thrown.
+#
+# New address is NOT created.
+@customer_login_required
+@require_POST
+def edit_address(request):
+    form = AddressForm(request.POST)
+    response = dict()
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    if form.is_valid():
+        address_ = Address.objects.filter(name=form.cleaned_data['name'],
+                                          customer_id=request.session[utils.SESSION_CUSTOMER_ID])
+        if len(address_) > 0:
+            address = address_.first()  # type: Address
+            address.address = form.cleaned_data['address']
+            address.phone = form.cleaned_data['phone']
+            address.landmark = form.cleaned_data['landmark']
+            address.city = form.cleaned_data['city']
+            address.state = form.cleaned_data['state']
+            address.save()
+            response[utils.KEY_ADDRESS_NAME] = address.name
+        else:
+            response[utils.KEY_STATUS] = utils.STATUS_ERROR
+            response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ADDRESS_NOT_FOUND
+    else:
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
         response[utils.KEY_FORM] = form.as_table()
     return JsonResponse(response)

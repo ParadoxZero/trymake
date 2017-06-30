@@ -71,7 +71,6 @@ STATUS_ERROR = 'error'
 
 ERROR_INCORRECT_CREDENTIALS = "Incorrect username or password"
 ERROR_INVALID_INPUT = "Invalid Input"
-ERROR_INVALID_ADDRESS = "Input for address was invalid."
 ERROR_ADDRESS_NOT_FOUND = "No address found with the given name"
 ERROR_ADDRESS__NAME_EXISTS = "Address name already exists"
 

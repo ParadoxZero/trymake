@@ -19,7 +19,12 @@
 </table>
 
 <table>
+    <form method="post" action="{% url "core:account:submit_address" %}">
 {{ address_form }}
+        {% csrf_token %}
+                <tr><th></th><td><input type="submit"></td></tr>
+
+    </form>
 </table>
 
 <table>
