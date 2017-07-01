@@ -4,7 +4,10 @@
 
 (function(){
 
-    var app = angular.module('login', []).config(function ($httpProvider) {
+    var app = angular.module('login', [], function ($interpolateProvider) {
+        $interpolateProvider.startSymbol('{[');
+        $interpolateProvider.endSymbol(']}')
+    }).config(function ($httpProvider) {
         $httpProvider.defaults.headers.post['X-CSRFToken'] = $('input[name=csrfmiddlewaretoken]').val();
         $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
     });
