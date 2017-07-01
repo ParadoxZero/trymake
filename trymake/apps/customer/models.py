@@ -17,6 +17,8 @@ from django.core.validators import RegexValidator
 from django.db import IntegrityError
 from django.db import models
 
+from trymake.apps.validators import phone_validator, pin_validator
+
 
 class Customer(models.Model):
     GROUP_NAME = "Customer"
@@ -112,10 +114,8 @@ class Address(models.Model):
     name = models.CharField(max_length=250)
     address = models.TextField()
 
-    phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
     phone = models.CharField(validators=[phone_validator], max_length=11)
 
-    pin_validator = RegexValidator(regex=r"[0-9]{6}", message="Format: 999999")
     pincode = models.CharField(max_length=6, validators=[pin_validator])
 
     landmark = models.CharField(max_length=500, blank=True)

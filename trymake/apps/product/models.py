@@ -30,13 +30,18 @@ class Product(models.Model):
     approximate_weight = models.DecimalField(max_digits=6, decimal_places=2)
     short_description = models.TextField()
     description = models.TextField()
-    cover_image = models.ForeignKey(Image,related_name="cover_image")
+    cover_image = models.ForeignKey(Image, related_name="cover_image")
     images = models.ManyToManyField(Image, related_name="additional_images")
 
+    @property
+    def serialize(self):
+        return {  # TODO
+        }
+
     @classmethod
-    def create_product(cls,name: str, slug: str, approximate_weight: decimal,
-                           short_description: str, long_Description: str,
-                           image: UploadedFile, image_name: str)->"Product":
+    def create_product(cls, name: str, slug: str, approximate_weight: decimal,
+                       short_description: str, long_Description: str,
+                       image: UploadedFile, image_name: str) -> "Product":
         product = cls(name=name, short_description=short_description, description=long_Description,
                       approximate_weight=approximate_weight)
         product.save()
@@ -52,6 +57,7 @@ class AttributeValues(models.Model):
     value = models.CharField(max_length=500)
     product = models.ForeignKey(Product)
 
+
 class Category(models.Model):
     name = models.CharField(max_length=250, unique=True, db_index=True)
     image = models.ForeignKey(Image)
@@ -66,7 +72,7 @@ class Category(models.Model):
             filters[attribute.name] = list(AttributeValues.objects.filter(attribute=attribute).distinct())
         return filters
 
-    def filter(self,attribute_value_list:list):
+    def filter(self, attribute_value_list: list):
         return self.objects.filter(attributes__attributevalues__in=attribute_value_list)
 
         # TODO def create_category(name, image, parent=None)
@@ -77,11 +83,11 @@ class DiscountOffer(models.Model):
     discount_percent = models.PositiveSmallIntegerField()
     products = models.ManyToManyField(Product)
 
-    def add_products(self,product_list):
+    def add_products(self, product_list):
         self.products.add(*[product.pk for product in product_list])
 
     @classmethod
-    def create(cls,name:str,percentage:int,product_list:list=None):
+    def create(cls, name: str, percentage: int, product_list: list = None):
         discount = cls()
         discount.name = name
         discount.discount_percent = percentage

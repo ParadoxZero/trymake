@@ -20,43 +20,112 @@ from django.views.decorators.http import require_POST
 from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer, Address
 from trymake.apps.orders_management.models import Order
-
-from trymake.website.core import utils
-from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm
-from trymake.website.core.utils import get_context, redirect_to_origin
-from trymake.website.core.decorators import require_logged_out, customer_login_required
+from trymake.website import utils
+from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
+    UpdateProfileForm
+from trymake.website.utils import redirect_to_origin
+from trymake.website.utils.decorators import require_logged_out, customer_login_required
 
 
 #################################################################################
 # Core website Views                                                            #
 # ----------------------------------------------------------------------------- #
-# Every template in the core segment has                                        #
-# few common context data                                                       #
+# There will be only 3 views that renders template.                             #
 #                                                                               #
-# They are:                                                                     #
-# 1) Message                                                                    #
-# 2) Error Message                                                              #
-# 3) Login Form                                                                 #
-# 4) Registration Form                                                          #
-# 5) Users                                                                      #
+#  1) Homepage ( index )                                                        #
+#  2) My-account                                                                #
+#  3) Store page ( product listing page)                                        #
+#  4) Cart                                                                      #
+#  5) Proceed to buy                                                            #
 #                                                                               #
-# The context name for them can be referenced from                              #
-# trymake.website.core.utils                                                    #
+# ----------------------------------------------------------------------------- #
+# Each of the template pages will have some common                              #
+# context variables                                                             #
 #                                                                               #
+#  1) KEY_USER: authenticated user or None                                      #
+#  2) KEY_MESSAGE: if a message needs to be shows.                              #
+#  3) KEY_ERROR_MESSAGE: if some error occured in previous request              #
+#  4) KEY_FORM: if an errored form was submited earlier                         #
+#                   eg. Login form validation failed.                           #
+#                                                                               #
+# There MAY be a session value util.SESSION_PAGE_DETAIL.                        #
+# This session data will contain any message or errors that needs to be shown,  #
+# this value is set before redirecting to a view                                #
+# SESSION_PAGE_DETAILS may contain few keys like MESSAGE, ERROR, FORM etc       #
 #################################################################################
 
 
-def index(request):
-    context = get_context(request)
-    context[utils.KEY_REGISTRATION_FORM] = RegistrationForm()
-    context[utils.KEY_LOGIN_FORM] = LoginForm()
-    context["address_form"] = AddressForm()
-    context[utils.KEY_CHECK_EMAIL_FORM] = EnterEmailForm()
+def index(request):  # TEMPLATE
+    context = {utils.KEY_USER: request.user if request.user.is_authenticated() else None,
+               utils.KEY_REGISTRATION_FORM: RegistrationForm(), utils.KEY_LOGIN_FORM: LoginForm(),
+               "address_form": AddressForm(), utils.KEY_CHECK_EMAIL_FORM: EnterEmailForm()}
     return render(request, 'website/core/login.html', context)
 
 
+@customer_login_required
+def my_account(request):  # Template
+    """
+     Will render the  myaccount page template.
+     Will refer page details if found.
+     Page details are set while redirecting to the page.
+    """
+
+    # If key doesn't exists. That means, it wasn't a redirect
+    # Retrieving data structure containing page details
+    context = request.session.pop(utils.SESSION_PAGE_DETAIL, dict())
+    context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
+    context['customer'] = Customer.objects.get(user=request.user)
+    context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)[:3]
+    return render(request, 'website/core/my_account.html', context=context)
+
+
 #################################################################################
-# Login views                                                                   #
+# Redirect Views                                                                #
+# ----------------------------------------------------------------------------- #
+# These views redirect the user to some other link                              #
+# depending on the request                                                      #
+#                                                                               #
+#  1) Login                                                                     #
+#  2) Logout                                                                    #
+#  3) Payment                                                                   #
+#                                                                               #
+#################################################################################
+
+@require_POST
+@require_logged_out
+def process_login(request):  # REDIRECT
+    """
+    Login phase two when email exists
+    """
+    form = LoginForm(request, request.POST)
+    response = dict()
+    if form.is_valid():
+        user = form.user
+        login(request, user)
+        if not form.cleaned_data['remember_me']:
+            request.session.set_expiry(0)
+        request.session[utils.SESSION_CUSTOMER_ID] = str(form.customer_id)
+        response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    else:
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
+        response[utils.KEY_LOGIN_FORM] = form.as_table()
+    request.session[utils.SESSION_PAGE_DETAIL] = response
+    return redirect_to_origin(request)
+
+
+def logout_view(request):  # REDIRECT
+    logout(request)
+    request.session.flush()
+
+    # It is necessary to redirect so that any settings or any information
+    # related to the previous user which may have existed in the javascript
+    # Or cookies in general is flushed and removed.
+    return HttpResponseRedirect(reverse("core:index"))
+
+
+#################################################################################
+# AJAX Login views                                                              #
 # ----------------------------------------------------------------------------- #
 #                                                                               #
 # Trymake Login flow in four phases/parts:                                      #
@@ -66,6 +135,15 @@ def index(request):
 #     4) if email doesn't exist, show registration field                        #
 #                                                                               #
 #################################################################################
+
+
+@require_POST
+def is_Logged_in(request):  # AJAX
+    response = dict()
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    response[utils.KEY_IS_AUTHENTICATED] = request.user.is_authenticated()
+    return JsonResponse(response)
+
 
 @require_POST
 @require_logged_out
@@ -92,28 +170,6 @@ def check_account_exists(request):  # AJAX
 
 @require_POST
 @require_logged_out
-def process_login(request):  # AJAX
-    """
-    Login phase two when email exists
-    """
-    form = LoginForm(request, request.POST)
-    response = dict()
-    if form.is_valid():
-        user = form.user
-        login(request, user)
-        if not form.cleaned_data['remember_me']:
-            request.session.set_expiry(0)
-        request.session[utils.SESSION_CUSTOMER_ID] = str(form.customer_id)
-        response[utils.KEY_STATUS] = utils.STATUS_OKAY
-    else:
-        response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
-        response[utils.KEY_LOGIN_FORM] = form.as_table()
-    return JsonResponse(response)
-
-
-@require_POST
-@require_logged_out
 def process_registration(request):  # AJAX
     response = dict()
     form = RegistrationForm(request.POST)
@@ -125,6 +181,7 @@ def process_registration(request):  # AJAX
             firstname=form.cleaned_data.get("name")
         )
         response[utils.KEY_STATUS] = utils.STATUS_OKAY
+        response[utils.KEY_NAME] = customer.user.first_name
     else:
         response[utils.KEY_STATUS] = utils.STATUS_ERROR
         response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
@@ -132,18 +189,8 @@ def process_registration(request):  # AJAX
     return JsonResponse(response)
 
 
-def logout_view(request):  # AJAX
-    logout(request)
-    request.session.flush()
-
-    # It is necessary to redirect so that any settings or any information
-    # related to the previous user which may have existed in the javascript
-    # Or cookies in general is flushed and removed.
-    return HttpResponseRedirect(reverse("core:index"))
-
-
 #################################################################################
-# Account Views                                                                 #
+# AJAX Account Views                                                            #
 # ----------------------------------------------------------------------------- #
 #                                                                               #
 # Consists of the following pages which will load templates:                    #
@@ -156,13 +203,39 @@ def logout_view(request):  # AJAX
 #################################################################################
 
 
+# ----------------------- #
+# Customer Profile Update #
+# ----------------------- #
+
 @customer_login_required
-def my_account(request):  # Template
-    context = get_context(request)
-    context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
-    context['customer'] = Customer.objects.get(user=request.user)
-    context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)[:3]
-    return render(request, 'website/core/my_account.html', context=context)
+@require_POST
+def get_update_profile_form(request):  # AJAX
+    customer = Customer.objects.get(pk=request.session[utils.SESSION_CUSTOMER_ID])  # type: Customer
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_FORM: UpdateProfileForm(initial={
+            "name": customer.user.first_name,
+            "phone": customer.phone
+        })
+    })
+
+
+@customer_login_required
+@require_POST
+def update_customer_profile(request):  # AJAX
+    form = UpdateProfileForm(request.POST)
+    response = dict()
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    if form.is_valid():
+        customer = Customer.objects.get(pk=request.session[utils.SESSION_CUSTOMER_ID])  # type: Customer
+        customer.user.first_name = form.cleaned_data['name']
+        customer.phone = form.cleaned_data['phone']
+        customer.save()
+    else:
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
+        response[utils.KEY_FORM] = form.as_table()
+    return JsonResponse(response)
 
 
 # ---------------------- #
@@ -171,7 +244,7 @@ def my_account(request):  # Template
 
 @customer_login_required
 @require_POST
-def get_feedback_form(request):
+def get_feedback_form(request):  # AJAX
     return JsonResponse({
         utils.KEY_STATUS: utils.STATUS_OKAY,
         utils.KEY_FORM: FeedbackForm().as_table()
@@ -269,7 +342,7 @@ def process_address_add(request):  # AJAX
 # New address is NOT created.
 @customer_login_required
 @require_POST
-def edit_address(request):
+def edit_address(request):  # AJAX
     form = AddressForm(request.POST)
     response = dict()
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
