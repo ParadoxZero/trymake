@@ -1,10 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Trymake - MyAccount</title>
-</head>
-<body>
+{% extends 'website/core/base-includes.html' %}
+{% load staticfiles %}
+{% block title %}
+    <title>
+        My-account | Trymake | Buy Electronic project equipment in India |
+    </title>
+{% endblock %}
+{% block head %}
+    <script src="{% static 'my-account.js' %}"></script>
+{% endblock %}
 
-</body>
-</html>
+{% block body %}
+    <body ng-app="my_account">
+        <div class="orders" ng-controller="get_order" ng-init="get_list = {
+                'n' : 5,
+                'complete' : false,
+                'canceled' : false,
+                'chunk_number' : 0
+            }">
+            <button ng-click="view_orders(get_list) ;
+                get_list['chunk_number'] = get_list['chunk_number']+1">
+                Recent orders
+            </button>
+            <button ng-click="get_list['chunk_number'] = 50 ;
+            view_orders(get_list_all)"> View all orders</button>
+            {[return_list]}
+        </div>
+    </body>
+{% endblock %}
+
