@@ -29,19 +29,18 @@ class Customer(models.Model):
     is_verified = models.BooleanField(default=False)
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
-    phone = models.CharField(validators=[phone_validator], max_length=11,unique=True)
-
+    phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
 
     def send_mail(self, subject, message):
-        #TODO
+        # TODO
         pass
 
     def get_address_list(self):
         address_list = Address.objects.filter(customer=self)
         return address_list
 
-    def add_address(self, name:str, long_address:str, city:str,
-                    state: 'State', pincode:str, landmark:str, phone:str)->None:
+    def add_address(self, name: str, long_address: str, city: str,
+                    state: 'State', pincode: str, landmark: str, phone: str) -> None:
         address = Address()
         address.customer = self
         address.address = long_address
@@ -54,7 +53,7 @@ class Customer(models.Model):
         address.save()
 
     @staticmethod
-    def create(email: str, password: str, firstname: str, phone:str)->'Customer':
+    def create(email: str, password: str, firstname: str, phone: str) -> 'Customer':
         if User.objects.filter(email=email).exists():
             raise IntegrityError("Email ID Duplicated")
         customer = Customer()
@@ -77,7 +76,6 @@ class Customer(models.Model):
         g.save()
         return customer
 
-
     @property
     def serialize(self):
         return {
@@ -93,7 +91,7 @@ class Customer(models.Model):
 
 
 class Country(models.Model):
-    code = models.CharField(max_length=2,unique=True, db_index=True)
+    code = models.CharField(max_length=2, unique=True, db_index=True)
     name = models.CharField(max_length=500)
 
     def __str__(self):
@@ -101,7 +99,7 @@ class Country(models.Model):
 
 
 class State(models.Model):
-    code = models.CharField(max_length=5,unique=True, db_index=True)
+    code = models.CharField(max_length=5, unique=True, db_index=True)
     country = models.ForeignKey(Country, db_index=True)
     name = models.CharField(max_length=500)
 
@@ -121,15 +119,15 @@ class Address(models.Model):
     landmark = models.CharField(max_length=500, blank=True)
 
     city = models.CharField(max_length=500)
-    state = models.ForeignKey(State,on_delete=models.SET_NULL, null=True)
+    state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
 
     default = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = (('default','customer'),('customer','name'))
+        unique_together = (('default', 'customer'), ('customer', 'name'))
 
     def __str__(self):
-        return "%s %s : %s - %s"%(self.customer.user.first_name,
-                                  self.customer.user.last_name,
-                                  self.phone,
-                                  self.pincode)
+        return "%s %s : %s - %s" % (self.customer.user.first_name,
+                                    self.customer.user.last_name,
+                                    self.phone,
+                                    self.pincode)

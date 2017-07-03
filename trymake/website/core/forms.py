@@ -9,6 +9,7 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
 
 """
+import uuid
 
 from django import forms
 from django.contrib.auth import authenticate
@@ -17,6 +18,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 
 from trymake.apps.orders_management.models import Order
+from trymake.apps.product.models import Product
 from trymake.apps.user_interactions.models import Feedback, OrderFeedback, ProductFeedback
 from trymake.apps.customer.models import State, Customer
 from trymake.website.core.validators import email_doesnt_exist, pin_validator, phone_validator, phone_doesnt_exist
@@ -198,14 +200,14 @@ class ChangePasswordForm(forms.Form):
 class ProductFeedbackForm(forms.ModelForm):
     class Meta:
         model = ProductFeedback
-        exclude = ['verified_buyer', 'customer']
+        exclude = ['verified_buyer', 'customer', 'product']
 
-    def save_feedback(self, customer: Customer):
+    def save_feedback(self, customer: str, product:int):
         """
             Feedback needs option which customer is saving.
-        :type customer: Customer
         """
-        self.instance.customer = customer
+        self.instance.customer_id = uuid.UUID(customer)
+        self.instance.product_id = product
         return self.save()
 
 
@@ -214,8 +216,8 @@ class OrderFeedbackForm(forms.ModelForm):
         model = OrderFeedback
         exclude = ['order']
 
-    def save_feedback(self, order: Order):
-        self.instance.order = order
+    def save_feedback(self, order_id: str):
+        self.instance.order_id = order_id
         return self.save()
 
 

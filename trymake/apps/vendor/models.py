@@ -27,6 +27,11 @@ from trymake.apps.product.models import Product
 
 
 class Vendor(models.Model):
+    # Serialize Names
+    NAME = 'name'
+    EMAIL = 'email'
+    DESCRIPTION = 'description'
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     name = models.CharField(max_length=500)
     email = models.EmailField(unique=True)
@@ -39,7 +44,7 @@ class Vendor(models.Model):
                            price: decimal, discounted_price: decimal):
         product = Product.create_product(name, slug, approximate_weight, short_description,
                                          long_Description, image, image_name)
-        stock = Stocks(
+        stock = Stock(
             vendor=self,
             product=product,
             price=price,
@@ -58,14 +63,20 @@ class Vendor(models.Model):
         vendor.user = User.objects.create_user(username=email, email=email, password=password)
         vendor.user.save()
 
+    @property
+    def serialize(self):
+        return {
+
+        }
+
 
 class ReturnPolicy(models.Model):
     vendor = models.ForeignKey(Vendor)
-    return_by = models.PositiveSmallIntegerField()  # Number of dates
+    return_by = models.PositiveSmallIntegerField()  # Number of days
     terms_and_conditions = models.TextField()
 
 
-class Stocks(models.Model):
+class Stock(models.Model):
     vendor = models.ForeignKey(Vendor, db_index=True)
     product = models.ForeignKey(Product, db_index=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -73,14 +84,15 @@ class Stocks(models.Model):
     stock = models.PositiveIntegerField()
     return_policy = models.ForeignKey(ReturnPolicy)
     date_added = models.DateTimeField(default=datetime.now)
-    date_changed = models.DateTimeField()
 
 
-#### Signals and registering ###
+# ----------------------- #
+# Signals and registering #
+# ----------------------- #
 
 def stock_before_created(sender, **kwargs):
     stock = kwargs['instance']
     stock.date_changed = datetime.now()
 
 
-pre_save.connect(stock_before_created, sender=Stocks)
+pre_save.connect(stock_before_created, sender=Stock)

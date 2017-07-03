@@ -39,17 +39,18 @@ from django.http import HttpResponseRedirect
 #  3) ERROR_INVALID_ADDRESS                                                     #
 #################################################################################
 
-SESSION_CUSTOMER_ID = "customer_id"
-SESSION_PAGE_DETAIL = "page_details"
+SESSION_CUSTOMER_ID = 'customer_id'
+SESSION_PAGE_DETAIL = 'page_details'
 
 KEY_STATUS = 'status'
 KEY_ERROR_MESSAGE = 'error_message'
 KEY_MESSAGE = 'message'
-KEY_USER = "user"
-KEY_EMAIL = "email"
-KEY_NAME = "name"
-KEY_ADDRESS_NAME = "address_name"
-KEY_NUMBER = "num"
+KEY_USER = 'user'
+KEY_EMAIL = 'email'
+KEY_NAME = 'name'
+KEY_ADDRESS_NAME = 'address_name'
+KEY_NUMBER = 'num'
+KEY_ORDER_LIST = 'order_list'
 
 # Processing entities
 KEY_LOGIN_FORM = "login_form"
@@ -75,7 +76,7 @@ STATUS_ERROR = 'error'
 ERROR_INCORRECT_CREDENTIALS = "Incorrect username or password"
 ERROR_INVALID_INPUT = "Invalid Input"
 ERROR_ADDRESS_NOT_FOUND = "No address found with the given name"
-ERROR_ADDRESS__NAME_EXISTS = "Address name already exists"
+ERROR_ALREADY_EXISTS = "Already exists"
 
 
 def redirect_to_origin(request):

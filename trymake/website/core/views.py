@@ -11,18 +11,19 @@ Proprietary and confidential
 """
 
 from django.contrib.auth import login, logout
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 
 from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer, Address
 from trymake.apps.orders_management.models import Order
+from trymake.apps.user_interactions.models import ProductFeedback, OrderFeedback
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
-    UpdateProfileForm
+    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm
 from trymake.website.utils import redirect_to_origin
 from trymake.website.utils.decorators import require_logged_out, customer_login_required
 
@@ -30,7 +31,7 @@ from trymake.website.utils.decorators import require_logged_out, customer_login_
 #################################################################################
 # Core website Views                                                            #
 # ----------------------------------------------------------------------------- #
-# There will be only 3 views that renders template.                             #
+# There will be only 5 views that renders template.                             #
 #                                                                               #
 #  1) Homepage ( index )                                                        #
 #  2) My-account                                                                #
@@ -192,16 +193,73 @@ def process_registration(request):  # AJAX
 #################################################################################
 # AJAX Account Views                                                            #
 # ----------------------------------------------------------------------------- #
+# Handles following functions:                                                  #
 #                                                                               #
-# Consists of the following pages which will load templates:                    #
+#  1) Get order list                                                            #
+#  2) Get Address List                                                          #
+#  3) Get Complaint List                                                        #
+#  4) Get order details                                                         #
+#  5) Get Complaint Details                                                     #
 #                                                                               #
-#   1) My Account page                                                          #
-#   2) My orders                                                                #
-#   3) Add or edit my Address - AddressForm                                     #
-#   4) Edit Profile - UpdateProfileForm(),ChangePasswordForm()                  #
 #                                                                               #
 #################################################################################
 
+
+@require_GET
+@customer_login_required
+def get_order_list(request):
+    """
+    Possible GET parameters:
+    'n' -> default:50 ->Max Number of orders to get
+    'complete' -> Get only Completed orders
+    'canceled' -> Get only Canceled orders
+    'chunk_number` -> default:0
+    """
+    n = request.GET.get('n', 50)
+    complete = request.GET.get('complete', False)
+    canceled = request.GET.get('canceled', False)
+    chunk_number = request.GET.get('chunk_number', 0)
+    response = {
+        utils.KEY_ORDER_LIST: Order.get_order_details(request.session[utils.SESSION_CUSTOMER_ID], complete, canceled,
+                                                      n, chunk_number),
+        utils.KEY_STATUS: utils.STATUS_OKAY
+    }
+    return JsonResponse(response)
+
+
+@require_POST
+@customer_login_required
+def cancel_order(request):
+    # TODO
+    # How to handle multiple vendors with different cancellation policy?
+    # Cancel individual items?
+    # Most restrictive policy?
+    # Confirm with Bitto
+    pass
+
+
+@require_POST
+@customer_login_required
+def return_order(request):
+    # TODO
+    # How to handle orders with different return policies?
+    # Minimum return days valid?
+    # Confirm with Bitto
+    pass
+
+
+#################################################################################
+# Account Form processing                                                       #
+# ----------------------------------------------------------------------------- #
+# Consists of the following forms:                                              #
+#                                                                               #
+#  1) Profile Form                                                              #
+#  2) Feedback Form                                                             #
+#  3) Address Form                                                              #
+#  4) Product Feedback Form                                                     #
+#  5) Order Feedback Form                                                       #
+#                                                                               #
+#################################################################################
 
 # ----------------------- #
 # Customer Profile Update #
@@ -247,9 +305,36 @@ def update_customer_profile(request):  # AJAX
 def get_feedback_form(request):  # AJAX
     return JsonResponse({
         utils.KEY_STATUS: utils.STATUS_OKAY,
-        utils.KEY_FORM: FeedbackForm().as_table()
+        utils.KEY_FORM: ProductFeedbackForm().as_table()
     })
 
+
+@customer_login_required
+@require_POST
+def process_product_feedback(request, product_id: str):
+    response = dict()
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    form = ProductFeedbackForm(request.POST)
+    if form.is_valid():
+        try:
+            form.save_feedback(request.session[utils.SESSION_CUSTOMER_ID], int(product_id))
+        except IntegrityError:
+            response = {
+                utils.KEY_STATUS: utils.STATUS_ERROR,
+                utils.KEY_ERROR_MESSAGE: utils.ERROR_ALREADY_EXISTS
+            }
+    else:
+        response = {
+            utils.KEY_STATUS: utils.STATUS_ERROR,
+            utils.KEY_ERROR_MESSAGE: utils.ERROR_INVALID_INPUT,
+            utils.KEY_FORM: form.as_table()
+        }
+    return JsonResponse(response)
+
+
+# ------------------------ #
+# Product Feedback related #
+# ------------------------ #
 
 @customer_login_required
 @require_POST
@@ -265,6 +350,13 @@ def process_feedback(request):  # AJAX
         response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
         response[utils.KEY_FORM] = form.as_table()
     return JsonResponse(response)
+
+
+def get_product_feedback_form(request):
+    return JsonResponse({
+        utils.KEY_FORM: ProductFeedback(),
+        utils.KEY_STATUS: utils.STATUS_OKAY
+    })
 
 
 # -------------------- #
@@ -327,7 +419,7 @@ def process_address_add(request):  # AJAX
             address.save()
         except IntegrityError:
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
-            response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ADDRESS__NAME_EXISTS
+            response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ALREADY_EXISTS
             response[utils.KEY_FORM] = form.as_table()
     else:
         response[utils] = utils.STATUS_ERROR
@@ -339,7 +431,7 @@ def process_address_add(request):  # AJAX
 # In case the address name doesn't exists for given user,
 # Error is thrown.
 #
-# New address is NOT created.
+# New address will NOT be created - instead error will be returned.
 @customer_login_required
 @require_POST
 def edit_address(request):  # AJAX
@@ -349,7 +441,7 @@ def edit_address(request):  # AJAX
     if form.is_valid():
         address_ = Address.objects.filter(name=form.cleaned_data['name'],
                                           customer_id=request.session[utils.SESSION_CUSTOMER_ID])
-        if len(address_) > 0:
+        if len(address_) > 0:  # TODO Convert to model method
             address = address_.first()  # type: Address
             address.address = form.cleaned_data['address']
             address.phone = form.cleaned_data['phone']
@@ -365,4 +457,33 @@ def edit_address(request):  # AJAX
         response[utils.KEY_STATUS] = utils.STATUS_ERROR
         response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
         response[utils.KEY_FORM] = form.as_table()
+    return JsonResponse(response)
+
+
+# ------------------- #
+# Order Feedback Form #
+# ------------------- #
+
+
+@require_POST
+@customer_login_required
+def get_order_feedback_form(request):
+    return JsonResponse({
+        utils.KEY_FORM: OrderFeedbackForm(),
+        utils.KEY_STATUS: utils.STATUS_OKAY
+    })
+
+
+@require_POST
+@customer_login_required
+def process_order_feedback(request, order_id):
+    form = OrderFeedbackForm(request.POST)
+    response = dict()
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    if form.is_valid():
+        form.save_feedback(order_id)
+    else:
+        response[utils.KEY_STATUS] = utils.STATUS_OKAY
+        response[utils.KEY_FORM] = form.as_table()
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
     return JsonResponse(response)

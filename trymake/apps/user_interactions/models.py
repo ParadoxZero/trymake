@@ -34,6 +34,9 @@ class ProductFeedback(models.Model):
     comment = models.TextField()
     verified_buyer = models.BooleanField(default=False)
 
+    class Meta:
+        unique_together = (('customer','product'),)
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         self.verified_buyer = Order.objects.filter(customer=self.customer).filter(item__product=self.product).exists()
