@@ -219,10 +219,12 @@ def get_order_list(request):
     complete = request.GET.get('complete', False)
     canceled = request.GET.get('canceled', False)
     chunk_number = request.GET.get('chunk_number', 0)
+    finished, order_list = Order.get_order_details(request.session[utils.SESSION_CUSTOMER_ID], complete, canceled,
+                                                      n, chunk_number)
     response = {
-        utils.KEY_ORDER_LIST: Order.get_order_details(request.session[utils.SESSION_CUSTOMER_ID], complete, canceled,
-                                                      n, chunk_number),
-        utils.KEY_STATUS: utils.STATUS_OKAY
+        utils.KEY_ORDER_LIST: order_list ,
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_FINISHED: finished
     }
     return JsonResponse(response)
 

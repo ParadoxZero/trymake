@@ -101,9 +101,12 @@ class Order(models.Model):
             order_list = order_list.filter(order_status=Order.COMPLETED)
         if cancelled:
             order_list = order_list.filter(order_status=Order.CANCELLED)
-        order_list = order_list[num*chunk_number:num*(chunk_number+1)]
-        return [{'order_details': order.serialize,
-                 'order_items': [item.serialize for item in order.item_set]} for order in order_list]
+        order_list = order_list[num * chunk_number:num * (chunk_number + 1)]
+        finished = False
+        if len(order_list) == 0:
+            finished = True
+        return finished, [{'order_details': order.serialize,
+                           'order_items': [item.serialize for item in order.item_set]} for order in order_list]
 
     @property
     def serialize(self):

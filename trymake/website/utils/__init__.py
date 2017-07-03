@@ -58,9 +58,11 @@ KEY_REGISTRATION_FORM = "registration_form"
 KEY_CHECK_EMAIL_FORM = "email_check_form"
 KEY_FORM = "form"
 
+# Flags
 KEY_EMAIL_REGISTERED = 'email_registered'
 KEY_PHONE_REGISTERED = 'phone_registered'
 KEY_IS_AUTHENTICATED = 'is_authenticated'
+KEY_FINISHED = 'finished'
 
 ###########################
 # CONSTANT VALUES         #
