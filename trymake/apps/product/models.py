@@ -25,30 +25,61 @@ class AttributeName(models.Model):
 
 
 class Product(models.Model):
+    # Serialize Keys
+    NAME = 'name'
+    SLUG = 'slug'
+    WEIGHT = 'weight'
+    SHORT_DESCRIPTION = 'short_description'
+    DESCRIPTION = 'description'
+    COVER_IMAGE_URL = 'cover_image_url'
+
     name = models.CharField(max_length=250, unique=True, db_index=True)
-    slug = models.CharField(max_length=4, unique=True, db_index=True)
+    slug = models.CharField(max_length=10, unique=True, db_index=True)
     approximate_weight = models.DecimalField(max_digits=6, decimal_places=2)
     short_description = models.TextField()
     description = models.TextField()
-    cover_image = models.ForeignKey(Image, related_name='cover_image')
-    images = models.ManyToManyField(Image, related_name='additional_images')
+    product_image = models.ImageField(upload_to="images")
+    additional_images = models.ManyToManyField(Image, related_name='additional_images')
+
+    @staticmethod
+    def get_product_details(product_slug):
+        product = Product.objects.prefetch_related('images','attributevalues_set',
+                                                   'attributevalues_set__attribute').get(slug=product_slug)
+        additional_images = product.additional_images.all()
+        attributes = product.attributevalues_set.all()
+        attribute_details = list()
+        for attribute in attributes:
+            attribute_details.append({
+                'name': attribute.attribute.name,  # type:AttributeValues
+                'value': attribute.value,
+                'attribute_id': attribute.attribute_id
+            })
+        return {
+            'details': product.serialize,
+            'attributes': attribute_details,
+            'additional_images':[image.serialize for image in additional_images]
+        }
 
     @property
     def serialize(self):
-        return {  # TODO
+        return {
+            self.NAME: self.name,
+            self.SLUG: self.slug,
+            self.WEIGHT: self.approximate_weight,
+            self.SHORT_DESCRIPTION: self.short_description,
+            self.DESCRIPTION: self.description,
+            self.COVER_IMAGE_URL: self.product_image.url
         }
 
     @classmethod
     def create_product(cls, name: str, slug: str, approximate_weight: decimal,
                        short_description: str, long_Description: str,
-                       image: UploadedFile, image_name: str) -> 'Product':
+                       image: UploadedFile) -> 'Product':
         product = cls(name=name, short_description=short_description, description=long_Description,
                       approximate_weight=approximate_weight)
+        product.product_image = image
         product.save()
-        image = Image(name=image_name, date_added=datetime.now())
-        image.image = image
-        image.save()
-        product.images.add(image)
+
         return product
 
 
