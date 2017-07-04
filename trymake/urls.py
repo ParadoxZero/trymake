@@ -10,7 +10,7 @@ Proprietary and confidential
 
 """
 
-from django.conf.urls import url, include
+from django.conf.urls import url, include, static
 from django.contrib import admin
 
 
@@ -26,7 +26,11 @@ from django.contrib import admin
 # Including another URLconf
 #     1. Import the include() function: from django.conf.urls import url, include
 #     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
+from trymake import settings
+
 urlpatterns = [
     # url(r'^admin/', admin.site.urls),
-    url(r'', include('trymake.website.core.urls', namespace="core"))
+    url(r'^vendor/', include('trymake.website.vendor.urls', namespace='vendor')),
+    url(r'', include('trymake.website.core.urls', namespace="core")),
 ]
+
