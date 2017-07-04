@@ -11,7 +11,8 @@
         $httpProvider.defaults.headers.post['X-CSRFToken'] = $('input[name=csrfmiddlewaretoken]').val();
         $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
     });
-    var loginEmail = function ($scope, $http) {
+    var loginEmail = function ($scope, $http , $window) {
+            //Checks for email
         $scope.check_mail = function (email) {
             var param ="email=" + email;
 
@@ -28,11 +29,13 @@
                 headers : {'Content-Type': 'application/x-www-form-urlencoded'}
             }).then(onSuccess , onReject);
         };
-
+            //Authenticates the user
         $scope.login = function (email , password) {
             var param = "email="+$scope.email+"&password="+$scope.password;
             var onSuccess = function (response) {
                 $scope.msg = "successfully logged in";
+                //For development purposes only
+                $window.location.href = '/account/';
                 console.log($scope.msg)
             };
             var onReject = function (error) {
@@ -46,7 +49,7 @@
             })
                 .then(onSuccess , onReject);
         };
-
+            // If no user available when email id is entered then register form is shown
         $scope.register = function () {
             var param = "name="+$scope.name+"&phone="+$scope.phone
                     +"&email="+$scope.email+"&password="+$scope.password

@@ -6,25 +6,43 @@
     </title>
 {% endblock %}
 {% block head %}
-    <script src="{% static 'my-account.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'website/core/css/my-account.css' %}">
+    <script src="{% static 'website/core/my-account.js' %}"></script>
 {% endblock %}
 
 {% block body %}
-    <body ng-app="my_account">
-        <div class="orders" ng-controller="get_order" ng-init="get_list = {
+    <body ng-app="my_account" ng-controller="get_order">
+        <div class="customer">
+            <h2>Customer details</h2>
+            <span>Name:</span>{{ customer.user.first_name }} {{ customer.user.last_name }}<br>
+            <span>Email:</span>{{ customer.user.email }}<br>
+            <span>Phone no:</span>{{ customer.phone }}<br>
+            <form ng-click="update_profile()"><a href="#">Update profile</a></form>
+        </div>
+        <div class="orders"  ng-init="get_list = {
                 'n' : 5,
                 'complete' : false,
                 'canceled' : false,
                 'chunk_number' : 0
             }">
+            <h2>Your orders</h2>
             <button ng-click="view_orders(get_list) ;
                 get_list['chunk_number'] = get_list['chunk_number']+1">
-                Recent orders
+                Recent orders {[get_list['chunk_number']]}
             </button>
-            <button ng-click="get_list['chunk_number'] = 50 ;
-            view_orders(get_list_all)"> View all orders</button>
-            {[return_list]}
+            <button ng-click="get_list['n'] = 50 ;
+            view_orders(get_list_all)"> View all orders {[get_list['n']]}</button>
+            <br>{[return_list]}
+            <div ng-show="!return_list">
+
+                {{ orders }}
+            </div>
         </div>
+        <div class="complaints">
+            <h2>Complaints</h2>
+            {{ complaints }}
+        </div>
+
     </body>
 {% endblock %}
 
