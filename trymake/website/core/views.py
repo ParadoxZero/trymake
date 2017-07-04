@@ -13,14 +13,15 @@ Proprietary and confidential
 from django.contrib.auth import login, logout
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST, require_GET
 
 from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer, Address
-from trymake.apps.orders_management.models import Order
+from trymake.apps.orders_management.models import Order, Item
 from trymake.apps.user_interactions.models import ProductFeedback, OrderFeedback
+from trymake.apps.vendor.models import Stock
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm
@@ -227,23 +228,53 @@ def get_order_list(request):
 
 @require_POST
 @customer_login_required
-def cancel_order(request):
-    # TODO
-    # How to handle multiple vendors with different cancellation policy?
-    # Cancel individual items?
-    # Most restrictive policy?
-    # Confirm with Bitto
-    pass
+def return_order(request):
+    """
+    POST params
+    * 'order_id'
+    * 'product_id'
+    :param request:
+    :return:
+    """
+    try:
+        order_id = request.POST['order_id']
+        product_slug = require_POST['product_slug']
+    except KeyError:
+        return JsonResponse({
+            utils.KEY_STATUS: utils.STATUS_ERROR,
+            utils.KEY_ERROR_MESSAGE: utils.ERROR_MISSING_DATA
+        })
+    returnable = Order.is_returnable(order_id,product_slug)
+    if returnable['is_returnable']:
+        item = returnable['item']
+        item.return_item()
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_RETURN_ACCEPTED: returnable['is_returnable']
+    })
 
 
 @require_POST
 @customer_login_required
 def return_order(request):
-    # TODO
-    # How to handle orders with different return policies?
-    # Minimum return days valid?
-    # Confirm with Bitto
-    pass
+    """
+    POST params:
+    * 'order_id'
+    """
+    try:
+        order_id = request.POST['order_id']
+        reason = request.POST['reason']
+    except KeyError:
+        return JsonResponse({
+            utils.KEY_STATUS: utils.STATUS_ERROR,
+            utils.KEY_ERROR_MESSAGE: utils.ERROR_MISSING_DATA
+        })
+    order = get_object_or_404(Order, id=order_id)
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_CANCEL_ACCEPTED: order.cancel(reason)
+    })
+
 
 
 #################################################################################
@@ -272,7 +303,7 @@ def get_update_profile_form(request):  # AJAX
         utils.KEY_FORM: UpdateProfileForm(initial={
             "name": customer.user.first_name,
             "phone": customer.phone
-        })
+        }).as_table()
     })
 
 
@@ -290,7 +321,6 @@ def update_customer_profile(request):  # AJAX
         return JsonResponse(response)
     else:
         return form_validation_error(form)
-
 
 
 # ---------------------- #

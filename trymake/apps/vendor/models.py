@@ -12,17 +12,15 @@ Proprietary and confidential
 
 import uuid
 
-import decimal
-
 from datetime import datetime
 from django.contrib.auth.models import User
-from django.core.files.uploadedfile import UploadedFile
 from django.db import IntegrityError
 from django.db import models
 from django.db.models.signals import pre_save
 
 # Create your models here.
 from trymake.apps.commons.models import Image
+from trymake.apps.orders_management.models import Item
 from trymake.apps.product.models import Product
 
 
@@ -38,21 +36,6 @@ class Vendor(models.Model):
     user = models.OneToOneField(User)
     description = models.TextField()
 
-    def create_new_product(self, name: str, slug: str, approximate_weight: decimal,
-                           short_description: str, long_Description: str,
-                           image: UploadedFile, image_name: str, stock: int,
-                           price: decimal, discounted_price: decimal):
-        product = Product.create_product(name, slug, approximate_weight, short_description,
-                                         long_Description, image, image_name)
-        stock = Stock(
-            vendor=self,
-            product=product,
-            price=price,
-            discounted_price=discounted_price,
-            stock=stock,
-        )
-        stock.save()
-
     @classmethod
     def create_vendor(cls, name, email, password, description):
         if User.objects.filter(email=email).exists():
@@ -66,7 +49,7 @@ class Vendor(models.Model):
     @property
     def serialize(self):
         return {
-
+            # TODO
         }
 
 
@@ -78,7 +61,7 @@ class ReturnPolicy(models.Model):
 
 class Stock(models.Model):
     vendor = models.ForeignKey(Vendor, db_index=True)
-    product = models.ForeignKey(Product, db_index=True)
+    product = models.ForeignKey(Product, db_index=True, to_field='slug')
     price = models.DecimalField(max_digits=8, decimal_places=2)
     discounted_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     stock = models.PositiveIntegerField()
