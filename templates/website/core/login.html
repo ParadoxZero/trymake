@@ -6,11 +6,11 @@
     </title>
 {% endblock %}
 {% block head %}
-    <script src="{% static 'login.js' %}" ></script>
+    <script src="{% static 'website/core/login.js' %}" ></script>
 {% endblock %}
 {% block body %}
     <body ng-app="login">
-        <div ng-controller="loginEmail">
+        <div ng-controller="loginEmail" ng-cloak>
             <div ng-show="user.email_registered || !user">
                 <h2>Login</h2>
             </div>

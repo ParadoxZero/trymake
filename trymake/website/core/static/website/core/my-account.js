@@ -34,13 +34,15 @@
                 $scope.form = "Oops..Something went worng! Sorrryyy!!"
             };
             $http.post(url).then(onSuccess , onError);
+
         };
     };
-    app.directive('updateProfile', function () {
+/*    app.directive('updateProfile', function ($scope) {
         return {
-
+            template : $scope.form
         }
     });
+*/
     app.controller('get_order' ,  get_order);
 }());
 

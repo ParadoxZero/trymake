@@ -6,18 +6,24 @@
     </title>
 {% endblock %}
 {% block head %}
-    <link rel="stylesheet" href="{% static 'css/my-account.css' %}">
-    <script src="{% static 'my-account.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'website/core/css/my-account.css' %}">
+    <script src="{% static 'website/core/my-account.js' %}"></script>
 {% endblock %}
 
 {% block body %}
-    <body ng-app="my_account" ng-controller="get_order">
+    <body ng-app="my_account" ng-controller="get_order" ng-cloak>
         <div class="customer">
             <h2>Customer details</h2>
             <span>Name:</span>{{ customer.user.first_name }} {{ customer.user.last_name }}<br>
             <span>Email:</span>{{ customer.user.email }}<br>
             <span>Phone no:</span>{{ customer.phone }}<br>
-            <form ng-click="update_profile()"><a href="#">Update profile</a></form>
+            <form ng-click="update_profile()">
+                {% csrf_token %}
+                <a href="#">Update profile</a>
+            </form>
+            <form>
+                {[form]}
+            </form>
         </div>
         <div class="orders"  ng-init="get_list = {
                 'n' : 5,
