@@ -19,8 +19,9 @@ from django.views.decorators.http import require_POST, require_GET
 
 from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer, Address
-from trymake.apps.orders_management.models import Order
+from trymake.apps.orders_management.models import Order, Item
 from trymake.apps.user_interactions.models import ProductFeedback, OrderFeedback
+from trymake.apps.vendor.models import Stock
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm
@@ -228,11 +229,18 @@ def get_order_list(request):
 @require_POST
 @customer_login_required
 def cancel_order(request):
-    # TODO
-    # How to handle multiple vendors with different cancellation policy?
-    # Cancel individual items?
-    # Most restrictive policy?
-    # Confirm with Bitto
+    """
+    POST params
+    * 'order_id'
+    * 'product_id'
+    :param request:
+    :return:
+    """
+    order_id = request.POST['order_id']
+    product_slug = require_POST['product_slug']
+    returnable = Order.is_returnable(order_id,product_slug)
+    if returnable['is_returnable']:
+        pass
     pass
 
 
@@ -272,7 +280,7 @@ def get_update_profile_form(request):  # AJAX
         utils.KEY_FORM: UpdateProfileForm(initial={
             "name": customer.user.first_name,
             "phone": customer.phone
-        })
+        }).as_table()
     })
 
 
@@ -290,7 +298,6 @@ def update_customer_profile(request):  # AJAX
         return JsonResponse(response)
     else:
         return form_validation_error(form)
-
 
 
 # ---------------------- #

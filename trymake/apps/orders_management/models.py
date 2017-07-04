@@ -88,6 +88,7 @@ class Order(models.Model):
     total_cost = models.DecimalField(max_digits=8, decimal_places=2)
     date_placed = models.DateTimeField()
     date_completed = models.DateTimeField()
+    date_shipped = models.DateTimeField()
     is_completed = models.BooleanField()
     order_status = models.CharField(max_length=100, choices=ORDER_STATUS_CHOICES, default=ORDER_RECEIVED)
     last_status_changed = models.DateTimeField()
@@ -107,6 +108,25 @@ class Order(models.Model):
             finished = True
         return finished, [{'order_details': order.serialize,
                            'order_items': [item.serialize for item in order.item_set]} for order in order_list]
+
+    @staticmethod
+    def is_returnable(order_id, product_slug) -> dict:
+        items = Item.objects.prefetch_related('order', 'vendor__stock_set', 'vendor__stock_set__return_policy')
+        item = items.filter(order_id=order_id).filter(product__slug=product_slug).first()  # type: Item
+        if not item.order.is_completed:
+            return {
+                'is_returnable': False,
+                'reason': "Order Not Completed"
+            }
+        stock = item.vendor.stock_set.filter(product__slug=product_slug).first()  # type: Stock
+        max_days = stock.return_policy.return_by
+        order_date = item.order.date_completed
+        if (timezone.now() - order_date).days > max_days:
+            return {
+                'is_returnable':False,
+                'reason': "Return Date Over"
+            }
+
 
     @property
     def serialize(self):

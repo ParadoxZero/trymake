@@ -13,8 +13,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 
 from trymake import settings
-from trymake.apps.commons.models import Image
 from trymake.apps.product.models import Product, AdditionalImages
+from trymake.apps.vendor.models import Stock, ReturnPolicy
 
 
 class ProductAddForm(forms.ModelForm):
@@ -29,11 +29,23 @@ class ProductAddForm(forms.ModelForm):
             raise ValidationError("File size limit exceeded.", 'upload_limit_exeeded')
 
 
+class StockForm(forms.ModelForm):
+    class Meta:
+        model = Stock
+        exclude = ['product', 'vendor']
+
+
+class ReturnPolicyForm(forms.ModelForm):
+    class Meta:
+        model = ReturnPolicy
+        exclude = ['vendor']
+
+
 class AdditionalImagesForm(forms.ModelForm):
     class Meta:
         model = AdditionalImages
-        exclude = ['date_added','product']
+        exclude = ['date_added', 'product']
 
-    def save_image(self,product_slug):
+    def save_image(self, product_slug):
         self.instance.product_slug = product_slug
         return self.save()
