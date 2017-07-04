@@ -20,13 +20,16 @@ from trymake.apps.commons.models import Image
 from trymake.apps.product.models import AdditionalImages
 from trymake.website import utils
 from trymake.website.utils import form_validation_error
-from trymake.website.vendor.forms import ProductAddForm, ImageForm
+from trymake.website.vendor.forms import ProductAddForm, AdditionalImagesForm
 
 
 # TODO add vendor_login_required to all views
 
 def index(request):
-    return render(request, 'website/vendor/index.html', {'product': ProductAddForm()})
+    return render(request, 'website/vendor/index.html', {
+        'product': ProductAddForm(),
+        'additional_images': AdditionalImagesForm()
+    })
 
 
 @require_POST
@@ -40,9 +43,6 @@ def product_add(request):
         return form_validation_error(form)
 
 
-
-
-
 @require_POST
 def image_add(request, product_slug):
     form = ImageForm(request.POST, request.FILES)
@@ -53,4 +53,3 @@ def image_add(request, product_slug):
         })
     else:
         return form_validation_error(form)
-

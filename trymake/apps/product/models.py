@@ -53,7 +53,7 @@ class Product(models.Model):
     approximate_weight = models.DecimalField(max_digits=6, decimal_places=2)
     short_description = models.TextField()
     description = models.TextField()
-    product_image = models.ImageField(upload_to=get_upload_path)
+    product_image = models.ImageField(upload_to=get_upload_path_product_image)
 
     @staticmethod
     def get_product_details(product_slug):
@@ -99,7 +99,7 @@ class Product(models.Model):
 
 class AdditionalImages(models.Model):
     name = models.CharField(max_length=250, unique=True, db_index=True)
-    image = models.ImageField(upload_to="images")
+    image = models.ImageField(upload_to=get_upload_path_additional_image)
     date_added = models.DateTimeField()
     product = models.ForeignKey(Product, to_field='slug')
 

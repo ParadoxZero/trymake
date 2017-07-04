@@ -29,7 +29,7 @@ class ProductAddForm(forms.ModelForm):
             raise ValidationError("File size lmit exceeded.", 'upload_limit_exeeded')
 
 
-class ImageForm(forms.ModelForm):
+class AdditionalImagesForm(forms.ModelForm):
     class Meta:
         model = AdditionalImages
         exclude = ['date_added','product']
