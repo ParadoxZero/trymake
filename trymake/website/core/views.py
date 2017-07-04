@@ -24,7 +24,7 @@ from trymake.apps.user_interactions.models import ProductFeedback, OrderFeedback
 from trymake.apps.vendor.models import Stock
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
-    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm
+    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint
 from trymake.website.utils import redirect_to_origin, form_validation_error
 from trymake.website.utils.decorators import require_logged_out, customer_login_required
 
@@ -167,7 +167,6 @@ def check_account_exists(request):  # AJAX
         return form_validation_error(form)
 
 
-
 @require_POST
 @require_logged_out
 def process_registration(request):  # AJAX
@@ -201,6 +200,9 @@ def process_registration(request):  # AJAX
 #                                                                               #
 #################################################################################
 
+# ------ #
+# Orders #
+# ------ #
 
 @require_GET
 @customer_login_required
@@ -217,9 +219,9 @@ def get_order_list(request):
     canceled = request.GET.get('canceled', False)
     chunk_number = request.GET.get('chunk_number', 0)
     finished, order_list = Order.get_order_details(request.session[utils.SESSION_CUSTOMER_ID], complete, canceled,
-                                                      n, chunk_number)
+                                                   n, chunk_number)
     response = {
-        utils.KEY_ORDER_LIST: order_list ,
+        utils.KEY_ORDER_LIST: order_list,
         utils.KEY_STATUS: utils.STATUS_OKAY,
         utils.KEY_FINISHED: finished
     }
@@ -244,7 +246,7 @@ def return_order(request):
             utils.KEY_STATUS: utils.STATUS_ERROR,
             utils.KEY_ERROR_MESSAGE: utils.ERROR_MISSING_DATA
         })
-    returnable = Order.is_returnable(order_id,product_slug)
+    returnable = Order.is_returnable(order_id, product_slug)
     if returnable['is_returnable']:
         item = returnable['item']
         item.return_item()
@@ -275,6 +277,31 @@ def return_order(request):
         utils.KEY_CANCEL_ACCEPTED: order.cancel(reason)
     })
 
+
+# ---------- #
+# Complaints #
+# ---------- #
+
+@customer_login_required
+def get_complaint(request, complaint_id):
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_COMPLAINT: complaint.serialize
+    })
+
+
+@require_GET
+@customer_login_required
+def get_complaint_list(request):
+    """
+    GET params
+    * 'n'
+    * 'unresolved'
+    * 'resolved'
+    * 'chunk_number'
+    """
+    n = request.GET.get()  # TODO continue
 
 
 #################################################################################
@@ -502,3 +529,33 @@ def process_order_feedback(request, order_id):
         return JsonResponse(response)
     else:
         return form_validation_error(form)
+
+
+# ----------------- #
+# Complaint related #
+# ----------------- #
+
+@require_POST
+@customer_login_required
+def get_complaint_form(request):
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_FORM: RegisterComplaint()
+    })
+
+
+@require_POST
+@customer_login_required
+def process_complaint_form(request):
+    form = RegisterComplaint(request.POST)
+    if form.is_valid():
+        c = Complaint.register_complaint(
+            form.cleaned_data['oder_id'],
+            form.cleaned_data['title'],
+            form.cleaned_data['body']
+        )
+        return JsonResponse({
+            utils.KEY_STATUS: utils.STATUS_OKAY,
+            utils.KEY_COMPLAINT_NUMBER: c.id
+        })
+    return form_validation_error(form)
