@@ -21,15 +21,13 @@ class Image(models.Model):
     image = models.ImageField(upload_to="images")
     date_added = models.DateTimeField()
 
-    # TODO def create(upload_to, name, image, date)
-    # TODO def delete_image()
-
     @property
     def serialize(self):
         return {
             'name': self.name,
             'image_url': self.image.url
         }
+
 
 
 class Permissions(models.Model):

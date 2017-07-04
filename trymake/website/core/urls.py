@@ -39,11 +39,11 @@ my_account_urls = [
 
     # Product Feedback Form
     url(r'^form/product_feedback/get$', views.get_product_feedback_form, name="get_product_feedback_form"),
-    url(r'^form/product/submit/?P<product_id>[0-9]+', views.process_product_feedback, name="submit_product_feedback"),
+    url(r'^form/product/submit/(?P<product_id>[0-9]+)', views.process_product_feedback, name="submit_product_feedback"),
 
     # Order Feedback Form
     url(r'^form/order_feedback/get', views.get_order_feedback_form, name="get_order_feedback"),
-    url(r'^form/order_feedback/submit/?P<order_id>[0-9]+', views.process_order_feedback, name="process_order_feedback"),
+    url(r'^form/order_feedback/submit/(?P<order_id>[0-9]+)', views.process_order_feedback, name="process_order_feedback"),
 
 ]
 

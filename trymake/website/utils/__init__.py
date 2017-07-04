@@ -10,7 +10,7 @@ Proprietary and confidential
 
 """
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 
 #################################################################################
 # CONSTANTS                                                                     #
@@ -83,3 +83,11 @@ ERROR_ALREADY_EXISTS = "Already exists"
 
 def redirect_to_origin(request):
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+
+
+def form_validation_error(form):
+    return JsonResponse({
+        KEY_STATUS: STATUS_ERROR,
+        KEY_ERROR_MESSAGE: ERROR_INVALID_INPUT,
+        KEY_FORM: form.as_table()
+    })
