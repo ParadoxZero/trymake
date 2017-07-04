@@ -24,7 +24,7 @@ from trymake.apps.user_interactions.models import ProductFeedback, OrderFeedback
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm
-from trymake.website.utils import redirect_to_origin
+from trymake.website.utils import redirect_to_origin, form_validation_error
 from trymake.website.utils.decorators import require_logged_out, customer_login_required
 
 
@@ -161,12 +161,10 @@ def check_account_exists(request):  # AJAX
             response[utils.KEY_EMAIL_REGISTERED] = True
         else:
             response[utils.KEY_EMAIL_REGISTERED] = False
+        return JsonResponse(response)
     else:
-        response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = form.errors
-        response[utils.KEY_FORM] = form.as_table()
-    print(response)
-    return JsonResponse(response)
+        return form_validation_error(form)
+
 
 
 @require_POST
@@ -183,11 +181,9 @@ def process_registration(request):  # AJAX
         )
         response[utils.KEY_STATUS] = utils.STATUS_OKAY
         response[utils.KEY_NAME] = customer.user.first_name
+        return JsonResponse(response)
     else:
-        response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-        response[utils.KEY_REGISTRATION_FORM] = form.as_table()
-    return JsonResponse(response)
+        return form_validation_error(form)
 
 
 #################################################################################
@@ -291,11 +287,10 @@ def update_customer_profile(request):  # AJAX
         customer.user.first_name = form.cleaned_data['name']
         customer.phone = form.cleaned_data['phone']
         customer.save()
+        return JsonResponse(response)
     else:
-        response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-        response[utils.KEY_FORM] = form.as_table()
-    return JsonResponse(response)
+        return form_validation_error(form)
+
 
 
 # ---------------------- #
@@ -321,17 +316,13 @@ def process_product_feedback(request, product_id: str):
         try:
             form.save_feedback(request.session[utils.SESSION_CUSTOMER_ID], int(product_id))
         except IntegrityError:
-            response = {
+            return JsonResponse({
                 utils.KEY_STATUS: utils.STATUS_ERROR,
                 utils.KEY_ERROR_MESSAGE: utils.ERROR_ALREADY_EXISTS
-            }
+            })
+        return JsonResponse(response)
     else:
-        response = {
-            utils.KEY_STATUS: utils.STATUS_ERROR,
-            utils.KEY_ERROR_MESSAGE: utils.ERROR_INVALID_INPUT,
-            utils.KEY_FORM: form.as_table()
-        }
-    return JsonResponse(response)
+        return form_validation_error(form)
 
 
 # ------------------------ #
@@ -347,11 +338,9 @@ def process_feedback(request):  # AJAX
         response[utils.KEY_STATUS] = utils.STATUS_OKAY
         customer = Customer.objects.get(user=request.user)
         form.save_feedback(customer)
+        return JsonResponse(response)
     else:
-        response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-        response[utils.KEY_FORM] = form.as_table()
-    return JsonResponse(response)
+        return form_validation_error(form)
 
 
 def get_product_feedback_form(request):
@@ -423,11 +412,9 @@ def process_address_add(request):  # AJAX
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
             response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ALREADY_EXISTS
             response[utils.KEY_FORM] = form.as_table()
+        return JsonResponse(response)
     else:
-        response[utils] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-        response[utils.KEY_FORM] = form.as_table()
-    return JsonResponse(response)
+        return form_validation_error(form)
 
 
 # In case the address name doesn't exists for given user,
@@ -455,11 +442,9 @@ def edit_address(request):  # AJAX
         else:
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
             response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ADDRESS_NOT_FOUND
+        return JsonResponse(response)
     else:
-        response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-        response[utils.KEY_FORM] = form.as_table()
-    return JsonResponse(response)
+        return form_validation_error(form)
 
 
 # ------------------- #
@@ -484,8 +469,6 @@ def process_order_feedback(request, order_id):
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
     if form.is_valid():
         form.save_feedback(order_id)
+        return JsonResponse(response)
     else:
-        response[utils.KEY_STATUS] = utils.STATUS_OKAY
-        response[utils.KEY_FORM] = form.as_table()
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_INPUT
-    return JsonResponse(response)
+        return form_validation_error(form)

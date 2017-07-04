@@ -27,9 +27,15 @@ class AttributeName(models.Model):
     name = models.CharField(max_length=250, unique=True, db_index=True)
 
 
-def get_upload_path(intance, filename:str):
+def get_upload_path_product_image(intance: 'Product', filename: str):
     filename, file_extension = os.path.splitext(filename)
     return '{0}{1}{2}'.format(settings.PRODUCT_IMAGE_BASE_URL, intance.slug, file_extension)
+
+
+def get_upload_path_additional_image(instance: 'AdditionalImages', filename: str):
+    filename, file_ext = os.path.splitext(filename)
+    return '{0}{1}/{2}{3}'.format(settings.PRODUCT_ADDITIONAL_IMAGES_BASE_URL, instance.product.slug, instance.name,
+                                  file_ext)
 
 
 class Product(models.Model):
@@ -48,7 +54,6 @@ class Product(models.Model):
     short_description = models.TextField()
     description = models.TextField()
     product_image = models.ImageField(upload_to=get_upload_path)
-    additional_images = models.ManyToManyField(Image, related_name='additional_images')
 
     @staticmethod
     def get_product_details(product_slug):
@@ -90,6 +95,20 @@ class Product(models.Model):
         product.save()
 
         return product
+
+
+class AdditionalImages(models.Model):
+    name = models.CharField(max_length=250, unique=True, db_index=True)
+    image = models.ImageField(upload_to="images")
+    date_added = models.DateTimeField()
+    product = models.ForeignKey(Product, to_field='slug')
+
+    @property
+    def serialize(self):
+        return {
+            'name': self.name,
+            'image_url': self.image.url
+        }
 
 
 class AttributeValues(models.Model):

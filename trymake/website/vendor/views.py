@@ -9,22 +9,48 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
 
 """
-from django.http import HttpResponse
+from django.contrib.auth.models import Group, User
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
-from trymake.website.vendor.forms import ProductAddForm
+from django.views.decorators.http import require_POST
 
+from trymake.apps.commons.models import Image
+from trymake.apps.product.models import AdditionalImages
+from trymake.website import utils
+from trymake.website.utils import form_validation_error
+from trymake.website.vendor.forms import ProductAddForm, ImageForm
+
+
+# TODO add vendor_login_required to all views
 
 def index(request):
-    return render(request,'website/vendor/index.html',{'product':ProductAddForm()})
+    return render(request, 'website/vendor/index.html', {'product': ProductAddForm()})
 
 
+@require_POST
 def product_add(request):
     form = ProductAddForm(request.POST, request.FILES)
     print(request.FILES)
     if form.is_valid():
         form.save()
+        return JsonResponse({utils.KEY_STATUS: utils.STATUS_OKAY})
     else:
-        return HttpResponse(str(form.errors))
-    return HttpResponse("hello")
+        return form_validation_error(form)
+
+
+
+
+
+@require_POST
+def image_add(request, product_slug):
+    form = ImageForm(request.POST, request.FILES)
+    if form.is_valid():
+        form.save_image(product_slug)
+        return JsonResponse({
+            utils.KEY_STATUS: utils.STATUS_OKAY
+        })
+    else:
+        return form_validation_error(form)
+
