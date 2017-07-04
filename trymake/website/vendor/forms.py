@@ -26,7 +26,7 @@ class ProductAddForm(forms.ModelForm):
     def clean_product_image(self):
         image = self.cleaned_data['product_image']
         if image.size > settings.MAX_UPLOAD_SIZE:
-            raise ValidationError("File size lmit exceeded.", 'upload_limit_exeeded')
+            raise ValidationError("File size limit exceeded.", 'upload_limit_exeeded')
 
 
 class AdditionalImagesForm(forms.ModelForm):
