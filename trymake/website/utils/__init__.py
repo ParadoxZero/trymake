@@ -63,6 +63,8 @@ KEY_EMAIL_REGISTERED = 'email_registered'
 KEY_PHONE_REGISTERED = 'phone_registered'
 KEY_IS_AUTHENTICATED = 'is_authenticated'
 KEY_FINISHED = 'finished'
+KEY_RETURN_ACCEPTED = 'return_accepted'
+KEY_CANCEL_ACCEPTED = 'cancel_accepted'
 
 ###########################
 # CONSTANT VALUES         #
@@ -79,6 +81,7 @@ ERROR_INCORRECT_CREDENTIALS = "Incorrect username or password"
 ERROR_INVALID_INPUT = "Invalid Input"
 ERROR_ADDRESS_NOT_FOUND = "No address found with the given name"
 ERROR_ALREADY_EXISTS = "Already exists"
+ERROR_MISSING_DATA = "Missing Data"
 
 
 def redirect_to_origin(request):

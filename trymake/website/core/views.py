@@ -13,7 +13,7 @@ Proprietary and confidential
 from django.contrib.auth import login, logout
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST, require_GET
 
@@ -228,7 +228,7 @@ def get_order_list(request):
 
 @require_POST
 @customer_login_required
-def cancel_order(request):
+def return_order(request):
     """
     POST params
     * 'order_id'
@@ -236,22 +236,45 @@ def cancel_order(request):
     :param request:
     :return:
     """
-    order_id = request.POST['order_id']
-    product_slug = require_POST['product_slug']
+    try:
+        order_id = request.POST['order_id']
+        product_slug = require_POST['product_slug']
+    except KeyError:
+        return JsonResponse({
+            utils.KEY_STATUS: utils.STATUS_ERROR,
+            utils.KEY_ERROR_MESSAGE: utils.ERROR_MISSING_DATA
+        })
     returnable = Order.is_returnable(order_id,product_slug)
     if returnable['is_returnable']:
-        pass
-    pass
+        item = returnable['item']
+        item.return_item()
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_RETURN_ACCEPTED: returnable['is_returnable']
+    })
 
 
 @require_POST
 @customer_login_required
 def return_order(request):
-    # TODO
-    # How to handle orders with different return policies?
-    # Minimum return days valid?
-    # Confirm with Bitto
-    pass
+    """
+    POST params:
+    * 'order_id'
+    """
+    try:
+        order_id = request.POST['order_id']
+        reason = request.POST['reason']
+    except KeyError:
+        return JsonResponse({
+            utils.KEY_STATUS: utils.STATUS_ERROR,
+            utils.KEY_ERROR_MESSAGE: utils.ERROR_MISSING_DATA
+        })
+    order = get_object_or_404(Order, id=order_id)
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_CANCEL_ACCEPTED: order.cancel(reason)
+    })
+
 
 
 #################################################################################

@@ -20,6 +20,7 @@ from django.db.models.signals import pre_save
 
 # Create your models here.
 from trymake.apps.commons.models import Image
+from trymake.apps.orders_management.models import Item
 from trymake.apps.product.models import Product
 
 
@@ -48,7 +49,7 @@ class Vendor(models.Model):
     @property
     def serialize(self):
         return {
-
+            # TODO
         }
 
 

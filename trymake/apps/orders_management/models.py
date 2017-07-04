@@ -63,9 +63,6 @@ class Order(models.Model):
     AWAITING_PAYMENT = 1
     PROCESSING = 2
     SHIPPED = 3
-    WAITING_RETURN = 4
-    PROCESSING_REFUND = 5
-    RETURNED = 6
     COMPLETED = 7
     CANCELLED = 8
     REJECTED = 9
@@ -75,9 +72,6 @@ class Order(models.Model):
         (AWAITING_PAYMENT, "Awaiting Payment"),
         (PROCESSING, "Processing"),
         (SHIPPED, "Shipped"),
-        (WAITING_RETURN, "Waiting Return"),
-        (PROCESSING_REFUND, "Processing Refund"),
-        (RETURNED, "Returned"),
         (COMPLETED, "Completed"),
         (CANCELLED, "Cancelled"),
         (REJECTED, "Rejected")
@@ -94,6 +88,9 @@ class Order(models.Model):
     last_status_changed = models.DateTimeField()
     address = models.TextField()
     phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
+
+    def cancelable(self):
+        return self.order_status in [Order.PROCESSING, Order.ORDER_RECEIVED, Order.AWAITING_PAYMENT]
 
     @staticmethod
     def get_order_details(customer_id, completed, cancelled, num, chunk_number):
@@ -112,7 +109,7 @@ class Order(models.Model):
     @staticmethod
     def is_returnable(order_id, product_slug) -> dict:
         items = Item.objects.prefetch_related('order', 'vendor__stock_set', 'vendor__stock_set__return_policy')
-        item = items.filter(order_id=order_id).filter(product__slug=product_slug).first()  # type: Item
+        item = items.filter(id=order_id).filter(product__slug=product_slug).first()  # type: Item
         if not item.order.is_completed:
             return {
                 'is_returnable': False,
@@ -123,10 +120,13 @@ class Order(models.Model):
         order_date = item.order.date_completed
         if (timezone.now() - order_date).days > max_days:
             return {
-                'is_returnable':False,
+                'is_returnable': False,
                 'reason': "Return Date Over"
             }
-
+        return {
+            'is_returnable': True,
+            'item': item
+        }
 
     @property
     def serialize(self):
@@ -141,6 +141,19 @@ class Order(models.Model):
             self.PHONE: self.phone,
         }
 
+    def cancel(self, reason: str):
+        if not self.cancelable():
+            return False
+        self.order_status = Order.CANCELLED
+        cancel = Cancels()
+        cancel.order = self
+        cancel.date_requested = timezone.now()
+        # TODO add Delivery sensitive refund_needed
+        cancel.refund_needed = True if self.order_status != Order.AWAITING_PAYMENT else False
+        cancel.reason = reason
+        cancel.save()
+        return True
+
 
 class Item(models.Model):
     # Serialized Constants
@@ -152,12 +165,29 @@ class Item(models.Model):
     PRODUCT_ID = 'product_id'
     VENDOR_ID = 'vendor_id'
 
+    # Return status Constants
+    RETURN_REQUESTED = 1
+    RETURNED = 2
+    PROCESSING_REFUND = 3
+    REFUNDED = 4
+    REFUND_REJECTED = 5
+
+    RETURN_CHOICES = (
+        (RETURNED, "Returned"),
+        (RETURN_REQUESTED, "Return Requested"),
+        (PROCESSING_REFUND, "Processing Refund"),
+        (REFUNDED, "Refunded"),
+        (REFUND_REJECTED, "Refund Rejected")
+
+    )
+
     # Model fields
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     qty = models.SmallIntegerField()
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
     order = models.ForeignKey(Order, db_index=True)
     cart = models.ForeignKey(Cart, db_index=True)
+    return_status = models.SmallIntegerField(choices=RETURN_CHOICES, null=True)
     # Redundant:
     # In case the product or vendor is deleted from the database
     vendor_name = models.CharField(max_length=250)
@@ -167,6 +197,13 @@ class Item(models.Model):
     def clean(self):
         if self.order == self.cart:
             raise ValidationError("At least and At most only Cart or Order should be set")
+
+    def return_item(self):
+        self.return_status = self.RETURN_REQUESTED
+        return_ = Returns()
+        return_.item = self
+        return_.date_requested = timezone.now()
+        return_.save()
 
     @classmethod
     def create_item(cls, product_id: int, qty: int, vendor_id: int, cart_id: int,
@@ -193,3 +230,18 @@ class Item(models.Model):
             self.VENDOR_ID: self.vendor_id,
             self.PRODUCT_ID: self.product_id
         }
+
+class Returns(models.Model):
+    item = models.OneToOneField(Item)
+    date_requested = models.DateTimeField()
+    refund_complete = models.BooleanField(default=False)
+    message = models.TextField(null=True)
+
+
+class Cancels(models.Model):
+    order = models.OneToOneField(Order)
+    refund_needed = models.BooleanField()
+    refunded = models.BooleanField(default=False)
+    message = models.TextField(null=True)
+    date_requested = models.DateTimeField()
+    reason = models.TextField()
