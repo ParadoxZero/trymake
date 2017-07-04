@@ -17,6 +17,9 @@ from trymake.apps.product.models import Product, AdditionalImages
 from trymake.apps.vendor.models import Stock, ReturnPolicy
 
 
+# --------------------------- #
+# Related to product addition #
+# --------------------------- #
 class ProductAddForm(forms.ModelForm):
     class Meta:
         model = Product
@@ -35,12 +38,6 @@ class StockForm(forms.ModelForm):
         exclude = ['product', 'vendor']
 
 
-class ReturnPolicyForm(forms.ModelForm):
-    class Meta:
-        model = ReturnPolicy
-        exclude = ['vendor']
-
-
 class AdditionalImagesForm(forms.ModelForm):
     class Meta:
         model = AdditionalImages
@@ -49,3 +46,13 @@ class AdditionalImagesForm(forms.ModelForm):
     def save_image(self, product_slug):
         self.instance.product_slug = product_slug
         return self.save()
+
+# ----------------------- #
+# Vendor Management Forms #
+# ----------------------- #
+
+
+class ReturnPolicyForm(forms.ModelForm):
+    class Meta:
+        model = ReturnPolicy
+        exclude = ['vendor']

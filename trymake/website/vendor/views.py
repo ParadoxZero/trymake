@@ -46,7 +46,7 @@ def product_add(request):
 
 @require_POST
 def image_add(request, product_slug):
-    form = ImageForm(request.POST, request.FILES)
+    form = AdditionalImagesForm(request.POST, request.FILES)
     if form.is_valid():
         form.save_image(product_slug)
         return JsonResponse({
