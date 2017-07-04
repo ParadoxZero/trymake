@@ -128,11 +128,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+MEDIA_ROOT = 'assets/'
 
 #################################################################################
-# Custom Settings                                                               #
+# Additional settings                                                           #
 #################################################################################
 
 LOGIN_URL = "login"
 
 CSRF_USE_SESSIONS = True
+
+# custom settings
+
+PRODUCT_IMAGE_BASE_URL = 'assets/product/image/'

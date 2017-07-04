@@ -11,12 +11,15 @@ Proprietary and confidential
 """
 
 import decimal
+import os
+
 from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 # Create your models here.
 from django.utils.datetime_safe import datetime
 
+from trymake import settings
 from trymake.apps.commons.models import Image
 
 
@@ -24,7 +27,13 @@ class AttributeName(models.Model):
     name = models.CharField(max_length=250, unique=True, db_index=True)
 
 
+def get_upload_path(intance, filename:str):
+    filename, file_extension = os.path.splitext(filename)
+    return '{0}{1}{2}'.format(settings.PRODUCT_IMAGE_BASE_URL, intance.slug, file_extension)
+
+
 class Product(models.Model):
+    IMAGE_SAVE_URL_BASE = 'assets/product/image/'
     # Serialize Keys
     NAME = 'name'
     SLUG = 'slug'
@@ -38,12 +47,12 @@ class Product(models.Model):
     approximate_weight = models.DecimalField(max_digits=6, decimal_places=2)
     short_description = models.TextField()
     description = models.TextField()
-    product_image = models.ImageField(upload_to="images")
+    product_image = models.ImageField(upload_to=get_upload_path)
     additional_images = models.ManyToManyField(Image, related_name='additional_images')
 
     @staticmethod
     def get_product_details(product_slug):
-        product = Product.objects.prefetch_related('images','attributevalues_set',
+        product = Product.objects.prefetch_related('images', 'attributevalues_set',
                                                    'attributevalues_set__attribute').get(slug=product_slug)
         additional_images = product.additional_images.all()
         attributes = product.attributevalues_set.all()
@@ -57,7 +66,7 @@ class Product(models.Model):
         return {
             'details': product.serialize,
             'attributes': attribute_details,
-            'additional_images':[image.serialize for image in additional_images]
+            'additional_images': [image.serialize for image in additional_images]
         }
 
     @property
