@@ -1,0 +1,9 @@
+.orders , .customer ,.complaints{
+    border: solid 1px black;
+    padding: 2em 7em;
+    margin: 1em 3em;
+}
+.customer span{
+    font-size: large;
+    font-weight: bold;
+}

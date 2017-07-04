@@ -25,6 +25,9 @@ my_account_urls = [
     # TODO return order
     # TODO delivery details
 
+    # Update profile
+    url(r'^form/update/edit$' , views.get_update_profile_form , name="update_profile_edit"),
+
     # Feedback form
     url(r'^form/feedback/get$', views.get_feedback_form, name="get_feedback_form"),
     url(r'^form/feedback/submit$', views.process_feedback, name="submit_feedback_form"),
