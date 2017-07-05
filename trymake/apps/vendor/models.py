@@ -47,7 +47,9 @@ class Vendor(models.Model):
     @property
     def serialize(self):
         return {
-            # TODO
+            self.NAME: self.name,
+            self.EMAIL: self.email,
+            self.DESCRIPTION: self.description
         }
 
 

@@ -61,3 +61,18 @@ class Complaint(models.Model):
             "status": dict(Complaint.CHOICES)[self.status],
             "assigned": self.assigned.name
         }
+
+    @classmethod
+    def get_list(cls, n, is_resolved, chunk_number, customer_id):
+        complaints = cls.objects.select_related().filter(order__customer_id=customer_id)
+        if is_resolved is not None:
+            if is_resolved:
+                complaints = complaints.filter(status=dict(Complaint.CHOICES)[Complaint.RESOLVED])
+            else:
+                complaints = complaints.exclude(status=dict(Complaint.CHOICES)[Complaint.RESOLVED])
+        complaints = complaints[n*chunk_number:n*(chunk_number+1)]
+        finished = complaints.count() == 0
+        return {
+            'complaint_list': [complaint.serialize for complaint in complaints],
+            'finished': finished
+        }
