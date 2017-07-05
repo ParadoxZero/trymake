@@ -34,7 +34,6 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.staticfiles',
     'storages',
     'trymake.apps.product',
@@ -56,7 +55,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -128,15 +126,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+
 MEDIA_URL = '/media/'
 
 STATIC_ROOT = 'static/'
 
 MEDIA_ROOT = '{0}uploads/'.format(STATIC_ROOT)
-
-#################################################################################
-# Additional settings                                                           #
-#################################################################################
 
 LOGIN_URL = "login"
 
@@ -147,12 +142,6 @@ CSRF_USE_SESSIONS = True
 PRODUCT_IMAGE_BASE_URL = 'product/image/'
 PRODUCT_ADDITIONAL_IMAGES_BASE_URL = 'product/additional_images'
 
-# 2.5MB - 2621440
-# 5MB - 5242880
-# 10MB - 10485760
-# 20MB - 20971520
-# 50MB - 5242880
-# 100MB 104857600
-# 250MB - 214958080
-# 500MB - 429916160
+# 2.5MB     - 2621440
+# 5MB       - 5242880
 MAX_UPLOAD_SIZE = "2621440"
