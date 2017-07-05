@@ -11,6 +11,7 @@ Proprietary and confidential
 """
 
 from django.conf.urls import url, include
+from django.views.generic import TemplateView
 
 from trymake.website.core import views
 
@@ -27,6 +28,7 @@ my_account_urls = [
 
     # Update profile
     url(r'^form/update/edit$' , views.get_update_profile_form , name="update_profile_edit"),
+    url(r'^form/update/submit$', views.update_customer_profile, name="update_profile_submit"),
 
     # Feedback form
     url(r'^form/feedback/get$', views.get_feedback_form, name="get_feedback_form"),
@@ -65,5 +67,6 @@ urlpatterns = [
     url(r'^login$', views.process_login, name="login"),
 
     # ACCOUNT views - core:account url namespace
-    url(r'^account/', include(my_account_urls, namespace="account"))
+    url(r'^account/', include(my_account_urls, namespace="account")),
+
 ]

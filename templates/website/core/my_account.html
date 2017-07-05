@@ -2,12 +2,14 @@
 {% load staticfiles %}
 {% block title %}
     <title>
-        My-account | Trymake | Buy Electronic project equipment in India |
+        My-account | Trymake
     </title>
 {% endblock %}
 {% block head %}
     <link rel="stylesheet" href="{% static 'website/core/css/my-account.css' %}">
     <script src="{% static 'website/core/my-account.js' %}"></script>
+    <script src="{% static 'website/core/angular-ng-html-bind.js' %}"></script>
+
 {% endblock %}
 
 {% block body %}
@@ -17,12 +19,15 @@
             <span>Name:</span>{{ customer.user.first_name }} {{ customer.user.last_name }}<br>
             <span>Email:</span>{{ customer.user.email }}<br>
             <span>Phone no:</span>{{ customer.phone }}<br>
-            <form ng-click="update_profile()">
+            <form ng-click="update_profile_form()">
                 {% csrf_token %}
                 <a href="#">Update profile</a>
             </form>
-            <form>
-                {[form]}
+            <form ng-show="form" ng-submit="update_profile_submit()">
+                <table bind-html-compile="form"></table>
+                    {% csrf_token %}
+                    <input type="submit">
+                    <h3 ng-hide="!status">Status : {[status]}</h3>
             </form>
         </div>
         <div class="orders"  ng-init="get_list = {
