@@ -26,6 +26,7 @@ class Customer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     user = models.OneToOneField(User, unique=True)
     email = models.EmailField(unique=True, null=False, db_index=True)
+    name = models.CharField(max_length=250)
     is_verified = models.BooleanField(default=False)
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
@@ -59,7 +60,7 @@ class Customer(models.Model):
         customer = Customer()
         customer.email = email
         customer.user = User.objects.create_user(email, email, password)
-        customer.user.first_name = firstname
+        customer.name = firstname
         customer.phone = phone
         customer.user.save()
         try:
