@@ -258,7 +258,7 @@ def return_order(request):
 
 @require_POST
 @customer_login_required
-def return_order(request):
+def cancel_order(request):
     """
     POST params:
     * 'order_id'
