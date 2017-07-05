@@ -297,11 +297,15 @@ def get_complaint_list(request):
     """
     GET params
     * 'n'
-    * 'unresolved'
     * 'resolved'
     * 'chunk_number'
     """
-    n = request.GET.get()  # TODO continue
+    n = request.GET.get('n',10)
+    is_resolved = request.GET.get('resolved',None)
+    chunk_number = request.GET.get('chunk_number',0)
+    response = Complaint.get_list(n, is_resolved, chunk_number, request.session[utils.SESSION_CUSTOMER_ID])
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    return JsonResponse(response)
 
 
 #################################################################################
