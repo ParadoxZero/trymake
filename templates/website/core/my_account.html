@@ -16,7 +16,7 @@
     <body ng-app="my_account" ng-controller="get_order" ng-cloak>
         <div class="customer">
             <h2>Customer details</h2>
-            <span>Name:</span>{{ customer.user.first_name }} {{ customer.user.last_name }}<br>
+            <span>Name:</span>{{ customer.name }}<br>
             <span>Email:</span>{{ customer.user.email }}<br>
             <span>Phone no:</span>{{ customer.phone }}<br>
             <form ng-click="update_profile_form()">

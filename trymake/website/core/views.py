@@ -328,7 +328,7 @@ def get_update_profile_form(request):  # AJAX
     return JsonResponse({
         utils.KEY_STATUS: utils.STATUS_OKAY,
         utils.KEY_FORM: UpdateProfileForm(initial={
-            "name": customer.user.first_name,
+            "name": customer.name,
             "phone": customer.phone
         }).as_table()
     })
@@ -342,7 +342,7 @@ def update_customer_profile(request):  # AJAX
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
     if form.is_valid():
         customer = Customer.objects.get(pk=request.session[utils.SESSION_CUSTOMER_ID])  # type: Customer
-        customer.user.first_name = form.cleaned_data['name']
+        customer.name = form.cleaned_data['name']
         customer.phone = form.cleaned_data['phone']
         customer.save()
         return JsonResponse(response)
