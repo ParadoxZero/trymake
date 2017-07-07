@@ -1,6 +1,12 @@
-/**
- * Created by Bineeth on 03-07-2017.
- */
+/*
+*   Author: Bineeth (bineeth@trymake.com)
+*
+*   Copyright (c) 2017 Sibibia Technologies Pvt Ltd
+*   All Rights Reserved
+*
+*   Unauthorized copying of this file, via any medium is strictly prohibited
+*   Proprietary and confidential
+*/
 
 (function () {
 
@@ -29,6 +35,8 @@
             var onSuccess = function (response) {
                 $scope.form = response.data.form ;
 
+
+
                 console.log($scope.form)
             };
             var onError = function (error) {
@@ -41,8 +49,16 @@
             var formData = "name="+$('input[name=name]').val()+
                     "&phone="+$('input[name=phone]').val();
             var onSuccess = function (responce) {
-                $scope.status = responce.data;
-                console.log(responce.data)
+                $scope.status = responce.data.status;
+                $scope.noError = responce.data.error_message;
+                $scope.form = responce.data.form;
+                if(responce.data.status === 'ok') {
+                    $scope.name = $('input[name=name]').val();
+                    $scope.phone = $('input[name=phone]').val();
+                    $scope.form = null;
+                }
+                console.log(responce.data);
+                console.log('Form' + $scope.form)
             };
             var onError = function (error) {
                 $scope.status = "Error";
@@ -54,7 +70,8 @@
                 data    : formData,
                 headers : {'Content-Type': 'application/x-www-form-urlencoded'}
             }).then(onSuccess , onError);
-        }
+        };
+
     };
     app.controller('get_order' ,  get_order);
 }());
