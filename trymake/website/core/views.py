@@ -25,7 +25,7 @@ from trymake.apps.vendor.models import Stock
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint
-from trymake.website.utils import redirect_to_origin, form_validation_error
+from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
 from trymake.website.utils.decorators import require_logged_out, customer_login_required
 
 
@@ -47,13 +47,9 @@ from trymake.website.utils.decorators import require_logged_out, customer_login_
 #  1) KEY_USER: authenticated user or None                                      #
 #  2) KEY_MESSAGE: if a message needs to be shows.                              #
 #  3) KEY_ERROR_MESSAGE: if some error occured in previous request              #
-#  4) KEY_FORM: if an errored form was submited earlier                         #
-#                   eg. Login form validation failed.                           #
+#  4) KEY_LOGIN_FORM: Contains Login form/ either fresh or errored.             #
+#  5) KEY_REGISTRATION_FORM: same as login form                                 #
 #                                                                               #
-# There MAY be a session value util.SESSION_PAGE_DETAIL.                        #
-# This session data will contain any message or errors that needs to be shown,  #
-# this value is set before redirecting to a view                                #
-# SESSION_PAGE_DETAILS may contain few keys like MESSAGE, ERROR, FORM etc       #
 #################################################################################
 
 
@@ -74,7 +70,7 @@ def my_account(request):  # Template
 
     # If key doesn't exists. That means, it wasn't a redirect
     # Retrieving data structure containing page details
-    context = request.session.pop(utils.SESSION_PAGE_DETAIL, dict())
+    context = get_template_context(request)
     context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
     context['customer'] = Customer.objects.get(user=request.user)
     context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)[:3]
@@ -107,12 +103,11 @@ def process_login(request):  # REDIRECT
         if not form.cleaned_data['remember_me']:
             request.session.set_expiry(0)
         request.session[utils.SESSION_CUSTOMER_ID] = str(form.customer_id)
-        response[utils.KEY_STATUS] = utils.STATUS_OKAY
+        request.session[utils.KEY_STATUS] = utils.STATUS_OKAY
     else:
-        response[utils.KEY_STATUS] = utils.STATUS_ERROR
-        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
-        response[utils.KEY_LOGIN_FORM] = form.as_table()
-    request.session[utils.SESSION_PAGE_DETAIL] = response
+        request.session[utils.KEY_STATUS] = utils.STATUS_ERROR
+        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
+        request.session[utils.KEY_LOGIN_FORM] = form.as_table()
     return redirect_to_origin(request)
 
 
