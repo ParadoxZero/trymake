@@ -10,7 +10,7 @@
 
 (function () {
 
-    var app = angular.module('my_account' , ['angular-bind-html-compile'] , function ($interpolateProvider) {
+    var app = angular.module('my_account' , ['angular-bind-html-compile' , 'ngSanitize'] , function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{[');
         $interpolateProvider.endSymbol(']}')
     }).config(function ($httpProvider) {
@@ -18,7 +18,7 @@
         $httpProvider.defaults.xsrfHeaderName = 'X-CSRFToken';
     });
 
-    var get_order = function ($scope , $http , $compile) {
+    var account_details = function ($scope , $http , $compile) {
         $scope.view_orders = function (get_list) {
             var url = 'ajax/orders/get';
             var onSuccess = function (responce) {
@@ -71,9 +71,44 @@
                 headers : {'Content-Type': 'application/x-www-form-urlencoded'}
             }).then(onSuccess , onError);
         };
+        $scope.add_new_edit_address = function () {
+            //TODO: Add param for address_name and pass it.
+            //var param = 'address_name='+$scope.address_name;
 
+            var onSuccess = function (response) {
+                console.log(response.data);
+                $scope.form_add_edit_address = response.data.form;
+            };
+            var onError = function (error) {
+                console.log('Not working');
+            };
+            $http({
+                method  : 'POST',
+                url     : '/account/form/address/get',
+                headers : {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(onSuccess , onError);
+        };
+        $scope.process_address_add = function () {
+            var param = "name="+$scope.name+"&address="+$scope.address
+            +"&landmark="+$scope.landmark+"&city="+$scope.city+"&pincode="
+            +$scope.pincode+"&phone="+$scope.phone;
+
+            var onSuccess = function (response) {
+                console.log(response.data);
+                $scope.form_add_edit_address = response.data.form;
+            };
+            var onError = function (error) {
+                console.log('Not working');
+            };
+            $http({
+                method  : 'POST',
+                url     : '/account/form/address/submit',
+                data    :  param,
+                headers : {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(onSuccess , onError);
+        };
     };
-    app.controller('get_order' ,  get_order);
+    app.controller('account_details' ,  account_details);
 }());
 
 
