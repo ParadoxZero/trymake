@@ -85,13 +85,20 @@ ERROR_INVALID_INPUT = "Invalid Input"
 ERROR_ADDRESS_NOT_FOUND = "No address found with the given name"
 ERROR_ALREADY_EXISTS = "Already exists"
 ERROR_MISSING_DATA = "Missing Data"
+ERROR_CUSTOMER_DOES_NOT_EXISTS = "Requested customer does not exists"
+ERROR_INVALID_TOKEN = "Invalid Token"
 
+###########################
+# Messages                #
+###########################
 
-def redirect_to_origin(request):
+MESSAGE_VERIFICATION_SUCCESSFUL = "Email verification successful"
+
+def redirect_to_origin(request) -> HttpResponseRedirect:
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 
 
-def form_validation_error(form):
+def form_validation_error(form) -> JsonResponse:
     return JsonResponse({
         KEY_STATUS: STATUS_ERROR,
         KEY_ERROR_MESSAGE: ERROR_INVALID_INPUT,
@@ -99,11 +106,11 @@ def form_validation_error(form):
     })
 
 
-def get_template_context(request):
+def get_template_context(request) -> dict:
     return {
         KEY_STATUS: request.session.pop(KEY_STATUS, STATUS_OKAY),
         KEY_MESSAGE: request.session.pop(KEY_MESSAGE, None),
-        KEY_ERROR_MESSAGE: request.pop(KEY_ERROR_MESSAGE, None),
+        KEY_ERROR_MESSAGE: request.session.pop(KEY_ERROR_MESSAGE, None),
         KEY_LOGIN_FORM: request.session.pop(KEY_LOGIN_FORM, LoginForm()),
         KEY_REGISTRATION_FORM: request.session.pop(KEY_REGISTRATION_FORM, RegistrationForm()),
         KEY_USER: request.user,

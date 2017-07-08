@@ -13,11 +13,33 @@ Proprietary and confidential
 import uuid
 
 from django.contrib.auth.models import User, Group
+from django.core.mail import send_mail
 from django.core.validators import RegexValidator
 from django.db import IntegrityError
 from django.db import models
+from django.db.models import QuerySet
+from django.template import Template
+from django.template.loader import get_template
+from django.utils import timezone
 
 from trymake.apps.validators import phone_validator, pin_validator
+
+
+class EmailTemplate:
+    def __init__(self, template, subject, from_mail='no-reply@notifications.trymake.com'):
+        self.template = get_template(template)  # type: Template
+        self.subject = subject
+        self.from_mail = from_mail
+
+
+EMAIL_VERIFICATION = 'email_verification'
+EMAIL_VERIFIED = 'email_verified'
+EMAIL_TEMPLATES = {
+    'email_verification': EmailTemplate(template='website/emails/verification.html',
+                                        subject="Please verify your email"),
+    'email_verified': EmailTemplate(template='website/emails/verified.html',
+                                    subject="Thank you for verifying you email"),
+}
 
 
 class Customer(models.Model):
@@ -32,11 +54,17 @@ class Customer(models.Model):
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
     phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
 
-    def send_mail(self, subject, message):
-        # TODO
-        pass
+    def send_mail(self, subject, message, from_mail='no-reply@notifications.trymake.com') -> None:
+        send_mail(subject=subject, message=message, from_email=from_mail, recipient_list=[self.email])
 
-    def get_address_list(self):
+    def send_template_mail(self, template: str, context: dict) -> None:
+        email_template = EMAIL_TEMPLATES[template]
+        message = email_template.template.render(context)
+        subject = email_template.subject
+        from_mail = email_template.from_mail
+        self.send_mail(subject, message, from_mail=from_mail)
+
+    def get_address_list(self) -> QuerySet:
         address_list = Address.objects.filter(customer=self)
         return address_list
 
@@ -77,8 +105,23 @@ class Customer(models.Model):
         g.save()
         return customer
 
+    @classmethod
+    def verify(cls, token: str) -> bool:
+        try:
+            t = EmailVerificationToken.objects.select_related('customer').get(token=token)
+        except EmailVerificationToken.DoesNotExist:
+            return False
+        if t.been_used:
+            return False
+        t.customer.is_verified = True
+        t.customer.save()
+        t.been_used = True
+        t.save()
+        t.customer.send_template_mail(EMAIL_VERIFIED, {'customer': t.customer})
+        return True
+
     @property
-    def serialize(self):
+    def serialize(self) -> dict:
         return {
             "username": self.user.username,
             "first_name": self.user.first_name,
@@ -87,7 +130,7 @@ class Customer(models.Model):
             "email": self.user.email
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.user.username
 
 
@@ -132,3 +175,17 @@ class Address(models.Model):
                                     self.customer.user.last_name,
                                     self.phone,
                                     self.pincode)
+
+
+class EmailVerificationToken(models.Model):
+    customer = models.ForeignKey(Customer)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
+    been_used = models.BooleanField(default=False)
+    date_issued = models.DateTimeField(default=timezone.now)
+
+    @classmethod
+    def create_token(cls, customer_id: str) -> str:
+        token = cls()
+        token.customer_id = customer_id
+        token.save()
+        return str(token.token)
