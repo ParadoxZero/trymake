@@ -153,7 +153,7 @@ MEDIA_ROOT = '{0}uploads/'.format(STATIC_ROOT)
 
 LOGIN_URL = "login"
 LOGOUT_URL = 'logout'
-LOGIN_REDIRECT_URL = 'outh_create'
+LOGIN_REDIRECT_URL = 'core:oauth_create'
 
 CSRF_USE_SESSIONS = True
 
@@ -163,6 +163,7 @@ SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 
 SOCIAL_AUTH_GITHUB_KEY = '41af3b1d2a8be6edfd13'
 SOCIAL_AUTH_GITHUB_SECRET = 'e984cf00bf50094f6a3eee0de8d6c43bf9347bd7'
+SOCIAL_AUTH_GITHUB_SCOPE = ['user']
 
 # Custom settings
 

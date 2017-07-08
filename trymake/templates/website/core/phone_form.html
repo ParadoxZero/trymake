@@ -1,0 +1,7 @@
+<form action="{% url "core:oauth_create" %}" method="post">
+    <input type="submit">
+    <table>
+        {{ form }}
+        {% csrf_token %}
+    </table>
+</form>

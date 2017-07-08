@@ -36,7 +36,7 @@ class EnterEmailForm(forms.Form):
 
 class LoginForm(forms.Form):
     ERROR_MESSAGES = {
-        "invalid_login":"Invalid credentials"
+        "invalid_login": "Invalid credentials"
     }
 
     email = forms.EmailField(
@@ -202,7 +202,7 @@ class ProductFeedbackForm(forms.ModelForm):
         model = ProductFeedback
         exclude = ['verified_buyer', 'customer', 'product']
 
-    def save_feedback(self, customer: str, product:int):
+    def save_feedback(self, customer: str, product: int):
         """
             Feedback needs option which customer is saving.
         """
@@ -242,3 +242,6 @@ class RegisterComplaint(forms.Form):
         widget=forms.Textarea
     )
 
+
+class OAuthAdditionalForm(forms.Form):
+    phone = forms.CharField(validators=[phone_validator, phone_doesnt_exist], max_length=11)

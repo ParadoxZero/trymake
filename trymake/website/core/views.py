@@ -28,7 +28,7 @@ from trymake.apps.user_interactions.models import ProductFeedback, OrderFeedback
 from trymake.apps.vendor.models import Stock
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
-    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint
+    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, OAuthAdditionalForm
 from trymake.website.core.utils import send_verification_email
 from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
 from trymake.website.utils.decorators import require_logged_out, customer_login_required
@@ -142,8 +142,20 @@ def process_email_verification(request):
 
 @login_required
 def oauth_create(request):
-    user = request.user  # type: User
-    customer = Customer()
+    c = Customer.objects.filter(user=request.user)
+    if c.count() > 0:
+        request.session[utils.SESSION_CUSTOMER_ID] = c.first().id.hex
+        return HttpResponseRedirect(reverse('core:account:myaccount'))
+    if request.method == "GET":
+        return render(request, "website/core/phone_form.html", {utils.KEY_FORM: OAuthAdditionalForm()})
+    if request.method == "POST":
+        form = OAuthAdditionalForm(request.POST)
+        if form.is_valid():
+            user = request.user  # type: User
+            customer = Customer.create_with_existing_user(user, form.cleaned_data['phone'])
+            return HttpResponseRedirect(reverse('core:oauth_create'))
+        else:
+            return render(request, "website/core/phone_form.html", {utils.KEY_FORM: form})
 
 
 #################################################################################
