@@ -65,7 +65,7 @@ class Customer(models.Model):
         self.send_mail(subject, message, from_mail=from_mail)
 
     def get_address_list(self) -> QuerySet:
-        address_list = Address.objects.filter(customer=self)
+        address_list = self.address_set.all()
         return address_list
 
     def add_address(self, name: str, long_address: str, city: str,
@@ -169,6 +169,19 @@ class Address(models.Model):
 
     class Meta:
         unique_together = (('default', 'customer'), ('customer', 'name'))
+
+    @property
+    def serialize(self):
+        return {
+            'name': self.name,
+            'address': self.address,
+            'phone': self.phone,
+            'pincode': self.pincode,
+            'landmark': self.landmark,
+            'city': self.city,
+            'state': self.state.name,
+            'default': self.default
+        }
 
     def __str__(self):
         return "%s %s : %s - %s" % (self.customer.user.first_name,
