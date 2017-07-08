@@ -18,11 +18,11 @@
     <link rel="stylesheet" href="{% static 'website/core/css/my-account.css' %}">
     <script src="{% static 'website/core/my-account.js' %}"></script>
     <script src="{% static 'website/core/angular-ng-html-bind.js' %}"></script>
-
+    <script src="{% static 'website/core/angular-ngSanitize.js' %}"></script>
 {% endblock %}
 
 {% block body %}
-    <body ng-app="my_account" ng-controller="get_order" ng-cloak>
+    <body ng-app="my_account" ng-controller="account_details" ng-cloak>
         <div class="customer">
             <h2>Customer details</h2>
             <span>Name:</span>
@@ -34,16 +34,24 @@
             </span><br>
             <span>Email:</span><span>{{ customer.user.email }}</span><br>
             <span>Phone no:</span><span ng-init="phone={{ customer.phone }}">{[phone]}</span><br>
-            <form ng-click="update_profile_form()">
-                {% csrf_token %}
-                <a href="#">Update profile</a>
-            </form>
-            <form ng-submit="update_profile_submit()" ng-show="form">
-                <table bind-html-compile="form"> </table>
+            <div id="update-profile">
+                <form ng-click="update_profile_form()">
                     {% csrf_token %}
-                    <input type="submit">
-                    <h3 ng-hide="!status">Status : {[noError]}</h3>
-            </form>
+                    <a href="#">Update profile</a>
+                </form>
+                <form ng-submit="update_profile_submit()" ng-show="form">
+                    <table bind-html-compile="form"> </table>
+                        {% csrf_token %}
+                        <input type="submit">
+                        <h3 ng-hide="!status">Status : {[noError]}</h3>
+                </form>
+            </div>
+            <div id="address">
+                <button ng-click="add_new_edit_address()">Add new address</button>
+                <table bind-html-compile="form_add_edit_address" >
+                    <input type="submit" ng-click="process_address_add()" ng-show="form_add_edit_address">
+                </table>
+            </div>
         </div>
         <div class="orders"  ng-init="get_list = {
                 'n' : 5,
