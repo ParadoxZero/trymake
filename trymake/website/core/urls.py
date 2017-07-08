@@ -22,9 +22,10 @@ my_account_urls = [
 
     # AJAX views
     url(r'^ajax/orders/get$',views.get_order_list, name="get_order_list"),
-    # TODO Cancel Order
-    # TODO return order
+    url(r'^ajax/orders/cancel$', views.cancel_order, name="cancel_order"),
+    url(r'^ajax/order/return$', views.return_order, name="return_order"),
     # TODO delivery details
+    url(r'^ajax/address/get$', views.get_address_list, name="get_address_list"),
 
     # Update profile
     url(r'^form/update/edit$' , views.get_update_profile_form , name="update_profile_edit"),

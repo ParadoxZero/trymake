@@ -52,6 +52,7 @@ KEY_NAME = 'name'
 KEY_ADDRESS_NAME = 'address_name'
 KEY_NUMBER = 'num'
 KEY_ORDER_LIST = 'order_list'
+KEY_ADDRESS_LIST = 'address_list'
 KEY_COMPLAINT_NUMBER = 'complaint_number'
 KEY_COMPLAINT = 'complaint'
 

@@ -72,7 +72,7 @@ def my_account(request):  # Template
     # If key doesn't exists. That means, it wasn't a redirect
     # Retrieving data structure containing page details
     context = get_template_context(request)
-    context['orders'] = Order.get_order_details(request.session[utils.SESSION_CUSTOMER_ID],num=3)
+    context['orders'] = Order.get_order_details(request.session[utils.SESSION_CUSTOMER_ID], num=3)
     context['customer'] = Customer.objects.get(id=request.session[utils.SESSION_CUSTOMER_ID])
     context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)[:3]
     return render(request, 'website/core/my_account.html', context=context)
@@ -136,6 +136,7 @@ def process_email_verification(request):
         return redirect_to_origin(request)
     request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_TOKEN
     return HttpResponseRedirect(reverse('core:index'))
+
 
 #################################################################################
 # AJAX Login views                                                              #
@@ -332,12 +333,30 @@ def get_complaint_list(request):
     * 'resolved'
     * 'chunk_number'
     """
-    n = request.GET.get('n',10)
-    is_resolved = request.GET.get('resolved',None)
-    chunk_number = request.GET.get('chunk_number',0)
+    n = request.GET.get('n', 10)
+    is_resolved = request.GET.get('resolved', None)
+    chunk_number = request.GET.get('chunk_number', 0)
     response = Complaint.get_list(n, is_resolved, chunk_number, request.session[utils.SESSION_CUSTOMER_ID])
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
     return JsonResponse(response)
+
+
+# ------- #
+# Address #
+# ------- #
+
+@require_POST
+@customer_login_required
+def get_address_list(request):
+    customer = Customer.objects.prefetch_related('address_set', 'address_set__state',
+                                                 'address_set__state__country').get(
+        id=request.session[utils.SESSION_CUSTOMER_ID]
+    )
+    address_list = customer.get_address_list()
+    return JsonResponse({
+        utils.KEY_STATUS: utils.STATUS_OKAY,
+        utils.KEY_ADDRESS_LIST: [addr.serialize for addr in address_list]
+    })
 
 
 #################################################################################
