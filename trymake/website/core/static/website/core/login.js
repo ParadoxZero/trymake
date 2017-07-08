@@ -41,8 +41,8 @@ Proprietary and confidential
             var onSuccess = function (response) {
                 $scope.msg = "successfully logged in";
                 //For development purposes only
-                $window.location.href = '/account/';
-                console.log($scope.msg)
+                //$window.location.href = '/account/';
+                console.log(response.data)
             };
             var onReject = function (error) {
                 $scope.error = "Incorrect password";

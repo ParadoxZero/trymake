@@ -43,12 +43,14 @@
                 <input type="email" ng-show="!user " placeholder="Enter Email" ng-model="email" id="id_email" name="email" required>
                 <input type="submit" ng-hide="user">
             </form>
-            <form ng-show="user.email_registered" ng-submit="login(email,password)">
+            <form ng-show="user.email_registered" action="{% url 'core:login' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" value="{[email]}" name="email">
                 {[email]}<br/>
                 <input type="password" placeholder="Enter password" ng-model="password" id="id_password" name="password" required>
                 <input type="submit">
             </form>
-            <form ng-hide="!user || user.email_registered" ng-submit="register()" name="register_form">
+            <form ng-hide="!user || user.email_registered " ng-submit="register()" name="register_form">
                 <input type="text" name="name" ng-model="name" autofocus="" placeholder="Enter Name" required id="id_name"><br/>
                 <input type="text" name="phone" ng-model="phone" placeholder="Enter Phone Number" required id="id_phone"><br/>
                 <input type="text" name="email" ng-model="email" placeholder="Enter Email" required id="id_email" readonly><br/>
