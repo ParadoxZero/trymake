@@ -122,7 +122,11 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
+# Email settings
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Static files and Media (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
@@ -133,11 +137,13 @@ STATIC_ROOT = 'static/'
 
 MEDIA_ROOT = '{0}uploads/'.format(STATIC_ROOT)
 
+# Additional settings
+
 LOGIN_URL = "login"
 
 CSRF_USE_SESSIONS = True
 
-# custom settings
+# Custom settings
 
 PRODUCT_IMAGE_BASE_URL = 'product/image/'
 PRODUCT_ADDITIONAL_IMAGES_BASE_URL = 'product/additional_images'
