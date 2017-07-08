@@ -12,8 +12,10 @@ Proprietary and confidential
 
 from django.contrib.auth import login, logout
 from django.db import IntegrityError, transaction
-from django.http import JsonResponse, HttpResponseRedirect
+from django.http import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
+from django.template import Template
+from django.template.loader import get_template
 from django.urls import reverse
 from django.views.decorators.http import require_POST, require_GET
 
@@ -25,6 +27,7 @@ from trymake.apps.vendor.models import Stock
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint
+from trymake.website.core.utils import send_verification_email
 from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
 from trymake.website.utils.decorators import require_logged_out, customer_login_required
 
@@ -71,8 +74,8 @@ def my_account(request):  # Template
     # If key doesn't exists. That means, it wasn't a redirect
     # Retrieving data structure containing page details
     context = get_template_context(request)
-    context['orders'] = Order.objects.filter(customer__user=request.user).order_by('-date_placed')[:3]
-    context['customer'] = Customer.objects.get(user=request.user)
+    context['orders'] = Order.get_order_details(request.session[utils.SESSION_CUSTOMER_ID],num=3)
+    context['customer'] = Customer.objects.get(id=request.session[utils.SESSION_CUSTOMER_ID])
     context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)[:3]
     return render(request, 'website/core/my_account.html', context=context)
 
@@ -120,6 +123,21 @@ def logout_view(request):  # REDIRECT
     # Or cookies in general is flushed and removed.
     return HttpResponseRedirect(reverse("core:index"))
 
+
+def process_email_verification(request):
+    """
+    GET params:
+    * token
+    """
+    try:
+        token = request.GET['token']
+    except KeyError:
+        return HttpResponseForbidden()
+    if Customer.verify(token):
+        request.session[utils.KEY_MESSAGE] = utils.MESSAGE_VERIFICATION_SUCCESSFUL
+        return redirect_to_origin(request)
+    request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_TOKEN
+    return HttpResponseRedirect(reverse('core:index'))
 
 #################################################################################
 # AJAX Login views                                                              #
@@ -176,9 +194,30 @@ def process_registration(request):  # AJAX
         )
         response[utils.KEY_STATUS] = utils.STATUS_OKAY
         response[utils.KEY_NAME] = customer.user.first_name
+        send_verification_email(customer)
         return JsonResponse(response)
     else:
         return form_validation_error(form)
+
+
+@require_POST
+@require_logged_out
+def email_verification(request):
+    """
+    POST params:
+    * customer_id
+    """
+    response = dict()
+    customer_id = request.POST['customer_id']
+    try:
+        customer = Customer.objects.get(id=customer_id)
+    except Customer.DoesNotExist:
+        response[utils.KEY_STATUS] = utils.STATUS_ERROR
+        response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_CUSTOMER_DOES_NOT_EXISTS
+        return JsonResponse(response)
+    send_verification_email(customer)
+    response[utils.KEY_STATUS] = utils.STATUS_OKAY
+    return JsonResponse(response)
 
 
 #################################################################################

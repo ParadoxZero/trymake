@@ -93,7 +93,7 @@ class Order(models.Model):
         return self.order_status in [Order.PROCESSING, Order.ORDER_RECEIVED, Order.AWAITING_PAYMENT]
 
     @staticmethod
-    def get_order_details(customer_id, completed, cancelled, num, chunk_number):
+    def get_order_details(customer_id, completed=False, cancelled=False, num=10, chunk_number=0):
         order_list = Order.objects.filter(customer_id=customer_id).prefetch_related('item_set')
         if completed:
             order_list = order_list.filter(order_status=Order.COMPLETED)
