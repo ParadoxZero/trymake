@@ -38,6 +38,7 @@ from django.http import HttpResponseRedirect, JsonResponse
 #  2) ERROR_INVALID_INPUT: just for any arbitary error                          #
 #  3) ERROR_INVALID_ADDRESS                                                     #
 #################################################################################
+from trymake.website.core.forms import LoginForm, RegistrationForm
 
 SESSION_CUSTOMER_ID = 'customer_id'
 SESSION_PAGE_DETAIL = 'page_details'
@@ -96,3 +97,16 @@ def form_validation_error(form):
         KEY_ERROR_MESSAGE: ERROR_INVALID_INPUT,
         KEY_FORM: form.as_table()
     })
+
+
+def get_template_context(request):
+    return {
+        KEY_STATUS: request.session.pop(KEY_STATUS, STATUS_OKAY),
+        KEY_MESSAGE: request.session.pop(KEY_MESSAGE, None),
+        KEY_ERROR_MESSAGE: request.pop(KEY_ERROR_MESSAGE, None),
+        KEY_LOGIN_FORM: request.session.pop(KEY_LOGIN_FORM, LoginForm()),
+        KEY_REGISTRATION_FORM: request.session.pop(KEY_REGISTRATION_FORM, RegistrationForm()),
+        KEY_USER: request.user,
+        KEY_IS_AUTHENTICATED: request.user.is_authenticated()
+
+    }
