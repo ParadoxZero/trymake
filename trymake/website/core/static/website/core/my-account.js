@@ -107,6 +107,7 @@
                 headers : {'Content-Type': 'application/x-www-form-urlencoded'}
             }).then(onSuccess , onError);
         };
+
     };
     app.controller('account_details' ,  account_details);
 }());

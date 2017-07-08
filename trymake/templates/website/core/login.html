@@ -50,6 +50,14 @@
                 <input type="password" placeholder="Enter password" ng-model="password" id="id_password" name="password" required>
                 <input type="submit">
             </form>
+            <form ng-hide="!user || user.email_registered " ng-submit="register()" name="register_form">
+                <input type="text" name="name" ng-model="name" autofocus="" placeholder="Enter Name" required id="id_name"><br/>
+                <input type="text" name="phone" ng-model="phone" placeholder="Enter Phone Number" required id="id_phone"><br/>
+                <input type="text" name="email" ng-model="email" placeholder="Enter Email" required id="id_email" readonly><br/>
+                <input type="password" name="password" ng-model="password" placeholder="Enter password" required id="id_password" minlength="10" ><br/>
+                <input type="password" name="password_verify" ng-model="password_verify" placeholder="Repeat password" required id="id_password_verify" minlength="10"  ><br/>
+                <input type="submit">
+            </form>
         </div>
     </body>
 {% endblock %}
