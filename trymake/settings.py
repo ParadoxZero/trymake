@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.staticfiles',
     'storages',
+    'social_django',
     'trymake.apps.product',
     'trymake.apps.commons',
     'trymake.apps.complaints',
@@ -56,6 +57,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'trymake.urls'
@@ -71,6 +73,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -87,6 +91,14 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.github.GithubOAuth2',
+    'social_core.backends.twitter.TwitterOAuth',
+    'social_core.backends.facebook.FacebookOAuth2',
+
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -140,8 +152,17 @@ MEDIA_ROOT = '{0}uploads/'.format(STATIC_ROOT)
 # Additional settings
 
 LOGIN_URL = "login"
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = 'outh_create'
 
 CSRF_USE_SESSIONS = True
+
+# Social Django
+
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+
+SOCIAL_AUTH_GITHUB_KEY = '41af3b1d2a8be6edfd13'
+SOCIAL_AUTH_GITHUB_SECRET = 'e984cf00bf50094f6a3eee0de8d6c43bf9347bd7'
 
 # Custom settings
 

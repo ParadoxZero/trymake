@@ -11,6 +11,7 @@ Proprietary and confidential
 """
 
 from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
@@ -18,6 +19,7 @@ from django.template import Template
 from django.template.loader import get_template
 from django.urls import reverse
 from django.views.decorators.http import require_POST, require_GET
+from social_core.tests.models import User
 
 from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer, Address
@@ -136,6 +138,12 @@ def process_email_verification(request):
         return redirect_to_origin(request)
     request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_TOKEN
     return HttpResponseRedirect(reverse('core:index'))
+
+
+@login_required
+def oauth_create(request):
+    user = request.user  # type: User
+    customer = Customer()
 
 
 #################################################################################

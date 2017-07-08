@@ -67,6 +67,7 @@ urlpatterns = [
     url(r'logout$', views.logout_view, name="logout"),
     url(r'^login$', views.process_login, name="login"),
     url(r'^verify', views.process_email_verification, name="process_email_verification"),
+    url(r'^oauth_create', views.oauth_create, name="oauth_create"),
 
     # ACCOUNT views - core:account url namespace
     url(r'^account/', include(my_account_urls, namespace="account")),
