@@ -57,9 +57,7 @@ from trymake.website.utils.decorators import require_logged_out, customer_login_
 
 
 def index(request):  # TEMPLATE
-    context = {utils.KEY_USER: request.user if request.user.is_authenticated() else None,
-               utils.KEY_REGISTRATION_FORM: RegistrationForm(), utils.KEY_LOGIN_FORM: LoginForm(),
-               "address_form": AddressForm(), utils.KEY_CHECK_EMAIL_FORM: EnterEmailForm()}
+    context = get_template_context(request)
     return render(request, 'website/core/login.html', context)
 
 
