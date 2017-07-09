@@ -142,7 +142,8 @@ class Customer(models.Model):
             "first_name": self.user.first_name,
             "last_name": self.user.last_name,
             "is_active": self.user.is_active,
-            "email": self.user.email
+            "email": self.user.email,
+            "phone": self.phone
         }
 
     def __str__(self) -> str:

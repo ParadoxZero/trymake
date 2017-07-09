@@ -95,6 +95,7 @@ ERROR_INVALID_TOKEN = "Invalid Token"
 
 MESSAGE_VERIFICATION_SUCCESSFUL = "Email verification successful"
 
+
 def redirect_to_origin(request) -> HttpResponseRedirect:
     return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
 

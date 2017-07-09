@@ -490,6 +490,10 @@ def get_product_feedback_form(request):
 @customer_login_required
 @require_POST
 def get_address_form(request):  # AJAX
+    """
+    POST params
+    * address_name : optional ( use this if you want to retrieve a pre-filled form, to edit an address )
+    """
     response = dict()
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
     if utils.KEY_ADDRESS_NAME in request.POST:
