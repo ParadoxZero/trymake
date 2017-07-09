@@ -91,6 +91,22 @@ class Customer(models.Model):
         customer.name = firstname
         customer.phone = phone
         customer.user.save()
+        Customer._add_group(customer)
+        return customer
+
+    @staticmethod
+    def create_with_existing_user(user:User, phone:str) -> 'Customer':
+        customer = Customer()
+        customer.email = user.email
+        customer.user = user
+        customer.name = "%s %s"%(user.first_name,user.last_name)
+        customer.phone = phone
+        customer.save()
+        Customer._add_group(customer)
+        return customer
+
+    @staticmethod
+    def _add_group(customer):
         try:
             g = Group.objects.get(name=Customer.GROUP_NAME)
         except Group.DoesNotExist:
@@ -103,7 +119,6 @@ class Customer(models.Model):
             raise IntegrityError("Email ID Duplicated")
         g.user_set.add(customer.user)
         g.save()
-        return customer
 
     @classmethod
     def verify(cls, token: str) -> bool:

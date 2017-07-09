@@ -12,6 +12,7 @@ Proprietary and confidential
 
 from django.conf.urls import url, include, static
 from django.contrib import admin
+from social_django import urls
 
 
 # The `urlpatterns` list routes URLs to views. For more information please see:
@@ -31,6 +32,7 @@ from trymake import settings
 urlpatterns = [
     # url(r'^admin/', admin.site.urls),
     url(r'^vendor/', include('trymake.website.vendor.urls', namespace='vendor')),
+    url(r'^oauth/', include('social_django.urls', namespace='social')),
     url(r'', include('trymake.website.core.urls', namespace="core")),
 ]
 
