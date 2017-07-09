@@ -12,20 +12,17 @@ Proprietary and confidential
 
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404
-from django.template import Template
-from django.template.loader import get_template
 from django.urls import reverse
 from django.views.decorators.http import require_POST, require_GET
 from social_core.tests.models import User
 
 from trymake.apps.complaints.models import Complaint
 from trymake.apps.customer.models import Customer, Address
-from trymake.apps.orders_management.models import Order, Item
-from trymake.apps.user_interactions.models import ProductFeedback, OrderFeedback
-from trymake.apps.vendor.models import Stock
+from trymake.apps.orders_management.models import Order
+from trymake.apps.user_interactions.models import ProductFeedback
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, OAuthAdditionalForm

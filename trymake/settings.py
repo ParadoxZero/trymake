@@ -25,7 +25,7 @@ SECRET_KEY = '$mmub7aejg*c+x@k*=zyxqhp+4e@022=2)1%texrn06&&&fy#@'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -96,7 +96,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.github.GithubOAuth2',
     'social_core.backends.twitter.TwitterOAuth',
     'social_core.backends.facebook.FacebookOAuth2',
-
+    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -179,6 +179,15 @@ SOCIAL_AUTH_GITHUB_SCOPE = ['user']
 
 SOCIAL_AUTH_TWITTER_KEY = '8I38YrIxBjv0i3E9stm5fArvG'
 SOCIAL_AUTH_TWITTER_SECRET = 'HW7NFUuSfNyF7ULQsV5MFetIS4lML9steFvA0LhFccTVHcq5po'
+
+SOCIAL_AUTH_FACEBOOK_KEY = '132278897358393'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'ce7dd0818eb2c89ab4f0b1c992491c58'
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '800674875324-9oc53l62h2q8lta7jtnrsif760phsld6.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'vnb29wyqtHB0kGrGTIQ8xi4g'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['profile','email']
+
 
 # Custom settings
 
