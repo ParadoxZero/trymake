@@ -54,7 +54,7 @@ class Customer(models.Model):
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
     phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
 
-    def send_mail(self, subject, message, from_mail='no-reply@notifications.trymake.com') -> None:
+    def mail(self, subject, message, from_mail='no-reply@notifications.trymake.com') -> None:
         send_mail(subject=subject, message=message, from_email=from_mail, recipient_list=[self.email])
 
     def send_template_mail(self, template: str, context: dict) -> None:
@@ -62,7 +62,7 @@ class Customer(models.Model):
         message = email_template.template.render(context)
         subject = email_template.subject
         from_mail = email_template.from_mail
-        self.send_mail(subject, message, from_mail=from_mail)
+        self.mail(subject, message, from_mail=from_mail)
 
     def get_address_list(self) -> QuerySet:
         address_list = self.address_set.all()
@@ -95,11 +95,11 @@ class Customer(models.Model):
         return customer
 
     @staticmethod
-    def create_with_existing_user(user:User, phone:str) -> 'Customer':
+    def create_with_existing_user(user: User, phone: str) -> 'Customer':
         customer = Customer()
         customer.email = user.email
         customer.user = user
-        customer.name = "%s %s"%(user.first_name,user.last_name)
+        customer.name = "%s %s" % (user.first_name, user.last_name)
         customer.phone = phone
         customer.save()
         Customer._add_group(customer)
@@ -123,10 +123,12 @@ class Customer(models.Model):
     @classmethod
     def verify(cls, token: str) -> bool:
         try:
-            t = EmailVerificationToken.objects.select_related('customer').get(token=token)
-        except EmailVerificationToken.DoesNotExist:
+            t = UniqueToken.objects.select_related('customer').get(token=token)
+        except UniqueToken.DoesNotExist:
             return False
         if t.been_used:
+            return False
+        if t.check_type(UniqueToken.EMAIL_VERIFICATION_TOKEN):
             return False
         t.customer.is_verified = True
         t.customer.save()
@@ -206,11 +208,21 @@ class Address(models.Model):
                                     self.pincode)
 
 
-class EmailVerificationToken(models.Model):
+class UniqueToken(models.Model):
+    EMAIL_VERIFICATION_TOKEN = 1
+    PASSWORD_RESET_TOKEN = 2
+    CHOICES = (
+        (EMAIL_VERIFICATION_TOKEN, "Email Verification Token"),
+        (PASSWORD_RESET_TOKEN, "Password Reset Token")
+    )
     customer = models.ForeignKey(Customer)
-    token = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True)
+    token = models.UUIDField(default=uuid.uuid4, editable=False, db_index=True, unique=True)
     been_used = models.BooleanField(default=False)
     date_issued = models.DateTimeField(default=timezone.now)
+    type = models.PositiveSmallIntegerField(choices=CHOICES)
+
+    def check_type(self, type: int):
+        return self.type == type
 
     @classmethod
     def create_token(cls, customer_id: str) -> str:

@@ -132,8 +132,8 @@ def process_email_verification(request):
         return HttpResponseForbidden()
     if Customer.verify(token):
         request.session[utils.KEY_MESSAGE] = utils.MESSAGE_VERIFICATION_SUCCESSFUL
-        return redirect_to_origin(request)
-    request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_TOKEN
+    else:
+        request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_TOKEN
     return HttpResponseRedirect(reverse('core:index'))
 
 

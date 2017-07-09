@@ -12,11 +12,11 @@ Proprietary and confidential
 from django.template import Template
 from django.template.loader import get_template
 
-from trymake.apps.customer.models import Customer, EmailVerificationToken, EMAIL_VERIFICATION
+from trymake.apps.customer.models import Customer, UniqueToken, EMAIL_VERIFICATION
 
 
 def generate_verification_token(customer: Customer) -> str:
-    token = EmailVerificationToken.create_token(customer.id)
+    token = UniqueToken.create_token(customer.id)
     return token
 
 
