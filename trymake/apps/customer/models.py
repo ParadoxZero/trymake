@@ -34,16 +34,20 @@ class EmailTemplate:
 
 EMAIL_VERIFICATION = 'email_verification'
 EMAIL_VERIFIED = 'email_verified'
+EMAIL_PASSWORD_RESET = 'password_reset'
 EMAIL_TEMPLATES = {
-    'email_verification': EmailTemplate(template='website/emails/verification.html',
-                                        subject="Please verify your email"),
-    'email_verified': EmailTemplate(template='website/emails/verified.html',
-                                    subject="Thank you for verifying you email"),
+    EMAIL_VERIFICATION: EmailTemplate(template='website/emails/verification.html',
+                                      subject="Please verify your email"),
+    EMAIL_VERIFIED: EmailTemplate(template='website/emails/verified.html',
+                                  subject="Thank you for verifying you email"),
+    EMAIL_PASSWORD_RESET: EmailTemplate(template="website/emails/password_reset.html",
+                                        subject="Link to reset your Trymake password"),
 }
 
 
 class Customer(models.Model):
     GROUP_NAME = "Customer"
+    PASSWORD_RESET_CUSTOMER = 'password_reset_customer'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     user = models.OneToOneField(User, unique=True)
@@ -137,6 +141,21 @@ class Customer(models.Model):
         t.customer.send_template_mail(EMAIL_VERIFIED, {'customer': t.customer})
         return True
 
+    @classmethod
+    def validate_password_token(cls, request, token: str):
+        try:
+            t = UniqueToken.objects.get(token=token)
+        except UniqueToken.DoesNotExist:
+            return False
+        if t.been_used:
+            return False
+        if not t.check_type(UniqueToken.PASSWORD_RESET_TOKEN):
+            return False
+        t.been_used = True
+        t.save()
+        request.session[cls.PASSWORD_RESET_CUSTOMER] = t.customer_id.hex
+        return True
+
     @property
     def serialize(self) -> dict:
         return {
@@ -225,8 +244,12 @@ class UniqueToken(models.Model):
         return self.type == type
 
     @classmethod
-    def create_token(cls, customer_id: str) -> str:
+    def create_token(cls, customer_id: str, type: int) -> str:
         token = cls()
         token.customer_id = customer_id
+        token.type = type
         token.save()
         return str(token.token)
+
+    def __str__(self):
+        return "%s: %s"%(self.customer, str(self.token))

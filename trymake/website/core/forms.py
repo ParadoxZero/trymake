@@ -197,6 +197,31 @@ class ChangePasswordForm(forms.Form):
         return password_verify
 
 
+class ResetPasswordForm(forms.Form):
+    password1 = forms.CharField(
+        label="New Password",
+        help_text="Make sure to enter long password",
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+
+    password2 = forms.CharField(
+        label="Repeat Password",
+        help_text="Enter your new password again",
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+
+    def clean_password2(self):
+        password = self.cleaned_data.get("password1")
+        password_verify = self.cleaned_data.get("password2")
+        if password and password_verify:
+            if password != password_verify:
+                raise ValidationError("Passwords don't match", code="password_mismatch")
+        validate_password(password_verify)
+        return password_verify
+
+
 class ProductFeedbackForm(forms.ModelForm):
     class Meta:
         model = ProductFeedback

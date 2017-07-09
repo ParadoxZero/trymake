@@ -25,7 +25,8 @@ from trymake.apps.orders_management.models import Order
 from trymake.apps.user_interactions.models import ProductFeedback
 from trymake.website import utils
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
-    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, OAuthAdditionalForm
+    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, OAuthAdditionalForm, \
+    ChangePasswordForm, ResetPasswordForm
 from trymake.website.core.utils import send_verification_email
 from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
 from trymake.website.utils.decorators import require_logged_out, customer_login_required
@@ -75,6 +76,34 @@ def my_account(request):  # Template
     context['customer'] = Customer.objects.get(id=request.session[utils.SESSION_CUSTOMER_ID])
     context['complaints'] = Complaint.objects.filter(order__customer__user=request.user)[:3]
     return render(request, 'website/core/my_account.html', context=context)
+
+
+def password_reset(request):
+    if request.method == "GET":
+        """
+        GET params
+        * token
+        """
+        try:
+            token = request.GET['token']
+        except KeyError:
+            return HttpResponseForbidden()
+        if Customer.validate_password_token(request, token):
+            return render(request, "website/core/reset_password.html", {utils.KEY_FORM:ResetPasswordForm()})
+        else:
+            return HttpResponseForbidden()
+    elif request.method == "POST":
+        form = ResetPasswordForm(request.POST)
+        if form.is_valid():
+            new_password = form.cleaned_data['password1']
+            customer = Customer.objects.select_related('user').get(id=request.session.pop(Customer.PASSWORD_RESET_CUSTOMER,None))
+            customer.user.set_password(new_password)
+            customer.user.save()
+            return HttpResponseRedirect(reverse("core:index"))
+        else:
+            return render(request, "website/core/reset_password.html", {utils.KEY_FORM: form})
+    else:
+        return HttpResponseForbidden()
 
 
 #################################################################################
@@ -135,6 +164,7 @@ def process_email_verification(request):
     else:
         request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INVALID_TOKEN
     return HttpResponseRedirect(reverse('core:index'))
+
 
 
 @login_required
