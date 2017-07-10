@@ -47,11 +47,12 @@
                 </form>
             </div>
             <div id="address">
+                <!-- Can change to automatic call in future -->
+                <button ng-click="show_address_list()">Show address list</button>
+                <!-------------------------------------------->
                 <button ng-click="add_new_edit_address()">Add new address</button>
                 <form ng-submit="add_new_edit_address()">
-                    <div bind-html-compile="form_add_edit_address">
-
-                    </div>
+                    <div bind-html-compile="form_add_edit_address"></div>
                     <input type="submit" ng-show="form_add_edit_address">
                 </form>
             </div>

@@ -107,6 +107,18 @@
                 headers : {'Content-Type': 'application/x-www-form-urlencoded'}
             }).then(onSuccess , onError);
         };
+        $scope.show_address_list = function () {
+             var onSuccess = function (response) {
+                console.log(response.data);
+            };
+            var onError = function (error) {
+                console.log('Not working');
+            };
+            $http({
+                method: 'POST',
+                url: "/account/ajax/address/get"
+            }).then(onSuccess , onError)
+        };
 
     };
     app.controller('account_details' ,  account_details);
