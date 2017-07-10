@@ -48,9 +48,12 @@
             </div>
             <div id="address">
                 <button ng-click="add_new_edit_address()">Add new address</button>
-                <table bind-html-compile="form_add_edit_address" >
-                    <input type="submit" ng-click="process_address_add()" ng-show="form_add_edit_address">
-                </table>
+                <form ng-submit="add_new_edit_address()">
+                    <div bind-html-compile="form_add_edit_address">
+
+                    </div>
+                    <input type="submit" ng-show="form_add_edit_address">
+                </form>
             </div>
         </div>
         <div class="orders"  ng-init="get_list = {
