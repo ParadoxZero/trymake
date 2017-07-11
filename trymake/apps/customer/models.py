@@ -61,6 +61,8 @@ class Customer(models.Model):
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
     phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
 
+    default_address = models.ForeignKey('Address', null=True, on_delete=models.SET_NULL, related_name='default_address')
+
     def mail(self, subject, message, from_mail='no-reply@notifications.trymake.com') -> None:
         send_mail(subject=subject, message=message, from_email=from_mail, recipient_list=[self.email])
 
@@ -212,8 +214,6 @@ class Address(models.Model):
     city = models.CharField(max_length=500)
     state = models.ForeignKey(State, on_delete=models.SET_NULL, null=True)
 
-    default = models.BooleanField(default=False)
-
     class Meta:
         unique_together = (('customer', 'name'),)
 
@@ -227,7 +227,6 @@ class Address(models.Model):
             'landmark': self.landmark,
             'city': self.city,
             'state': self.state.name,
-            'default': self.default
         }
 
     def __str__(self):
