@@ -24,12 +24,13 @@ from trymake.apps.customer.models import Customer, Address
 from trymake.apps.orders_management.models import Order
 from trymake.apps.user_interactions.models import ProductFeedback
 from trymake.website import utils
+from trymake.website.core.decorators import customer_login_required
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, OAuthAdditionalForm, \
     ChangePasswordForm, ResetPasswordForm
 from trymake.website.core.utils import send_verification_email
 from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
-from trymake.website.utils.decorators import require_logged_out, customer_login_required
+from trymake.website.utils.decorators import require_logged_out
 
 
 #################################################################################
@@ -127,7 +128,11 @@ def process_login(request):  # REDIRECT
     form = LoginForm(request, request.POST)
     response = dict()
     if form.is_valid():
-        user = form.user
+        user = form.user # type: User
+        if not user.is_active:
+            request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_VERIFY_EMAIL
+            request.sesssion[utils.KEY_SHOW_LOGIN] = True
+            return redirect_to_origin(request)
         login(request, user)
         if not form.cleaned_data['remember_me']:
             request.session.set_expiry(0)
