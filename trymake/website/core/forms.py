@@ -189,8 +189,8 @@ class AddressForm(forms.Form):
 
 
 class UpdateProfileForm(forms.Form):
-    name = forms.CharField(widget=forms.TextInput(attrs={'ng-model':"customer_name"}))
-    phone = forms.CharField(validators=[phone_validator], max_length=11,widget=forms.TextInput(attrs={'ng-model':"customer_phone"}))
+    name = forms.CharField()
+    phone = forms.CharField(validators=[phone_validator], max_length=11)
 
 
 class ChangePasswordForm(forms.Form):
