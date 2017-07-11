@@ -35,6 +35,7 @@ class EmailTemplate:
 EMAIL_VERIFICATION = 'email_verification'
 EMAIL_VERIFIED = 'email_verified'
 EMAIL_PASSWORD_RESET = 'password_reset'
+EMAIL_WELCOME = 'welcome'
 EMAIL_TEMPLATES = {
     EMAIL_VERIFICATION: EmailTemplate(template='website/emails/verification.html',
                                       subject="Please verify your email"),
@@ -42,6 +43,8 @@ EMAIL_TEMPLATES = {
                                   subject="Thank you for verifying you email"),
     EMAIL_PASSWORD_RESET: EmailTemplate(template="website/emails/password_reset.html",
                                         subject="Link to reset your Trymake password"),
+    EMAIL_WELCOME: EmailTemplate(template="website/emails/welcome.html",
+                                 subject="Welcome to Trymake")
 }
 
 
@@ -89,12 +92,20 @@ class Customer(models.Model):
     def create(email: str, password: str, firstname: str, phone: str) -> 'Customer':
         if User.objects.filter(email=email).exists():
             raise IntegrityError("Email ID Duplicated")
+        user = User(username=email,email=email)
+        user.set_password(password)
+        user.is_active = False
+        user.save()
         customer = Customer()
         customer.email = email
-        customer.user = User.objects.create_user(email, email, password)
+        customer.user = user
         customer.name = firstname
         customer.phone = phone
-        customer.user.save()
+        try:
+            customer.save()
+        except IntegrityError as e:
+            customer.user.delete()
+            raise e
         Customer._add_group(customer)
         return customer
 
@@ -105,7 +116,11 @@ class Customer(models.Model):
         customer.user = user
         customer.name = "%s %s" % (user.first_name, user.last_name)
         customer.phone = phone
-        customer.save()
+        try:
+            customer.save()
+        except IntegrityError:
+            customer.user.delete()
+            raise IntegrityError("Email ID Duplicated")
         Customer._add_group(customer)
         return customer
 
@@ -116,11 +131,6 @@ class Customer(models.Model):
         except Group.DoesNotExist:
             g = Group(name=Customer.GROUP_NAME)
             g.save()
-        try:
-            customer.save()
-        except IntegrityError:
-            customer.user.delete()
-            raise IntegrityError("Email ID Duplicated")
         g.user_set.add(customer.user)
         g.save()
 
