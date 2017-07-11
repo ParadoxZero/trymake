@@ -53,8 +53,8 @@
                 $scope.noError = responce.data.error_message;
                 $scope.form = responce.data.form;
                 if(responce.data.status === 'ok') {
-                    $scope.customer_current_name = $scope.customer_name;
-                    $scope.customer_current_phone = $scope.customer_phone;
+                    $scope.customer_current_name = $("input[name=name]").val();
+                    $scope.customer_current_phone = $("input[name=phone]").val();
                     $scope.form = null;
                 }
                 console.log(responce.data);

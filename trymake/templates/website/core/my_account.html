@@ -33,7 +33,7 @@
             <span ng-hide="customer_current_name">
                 {{ customer.name }}
             </span>
-            <span ng-show="name" ng-init="customer_current_name={{ customer.name }}">
+            <span ng-show="customer_current_name">
                     {[customer_current_name]}
             </span><br>
             <span>Email:</span><span>{{ customer.user.email }}</span><br>
@@ -47,7 +47,7 @@
                     <table bind-html-compile="form"> </table>
                         {% csrf_token %}
                         <input type="submit">
-                        <h3 ng-hide="!status">Status : {[noError]}</h3>
+                        <h3 ng-show="status==='error'">Status : {[noError]}</h3>
                 </form>
             </div>
             <div id="address">
