@@ -199,8 +199,8 @@ class State(models.Model):
 
 
 class Address(models.Model):
-    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.SET_NULL, null=True)
-    name = models.CharField(max_length=250)
+    customer = models.ForeignKey(Customer, db_index=True, on_delete=models.SET_NULL, null=True, unique=False)
+    name = models.CharField(max_length=250,  unique=True)
     address = models.TextField()
 
     phone = models.CharField(validators=[phone_validator], max_length=11)
@@ -215,7 +215,7 @@ class Address(models.Model):
     default = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = (('default', 'customer'), ('customer', 'name'))
+        unique_together = (('customer', 'name'),)
 
     @property
     def serialize(self):

@@ -571,12 +571,14 @@ def process_address_add(request):  # AJAX
             city=form.cleaned_data['city'],
             pincode=form.cleaned_data['pincode'],
             phone=form.cleaned_data['phone'],
-            customer_id=request.session[utils.SESSION_CUSTOMER_ID]
+            customer_id=request.session[utils.SESSION_CUSTOMER_ID],
+            state=form.cleaned_data['state']
         )
         response[utils.KEY_ADDRESS_NAME] = address.name
         try:
             address.save()
-        except IntegrityError:
+        except IntegrityError as e:
+            print(e)
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
             response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ALREADY_EXISTS
             response[utils.KEY_FORM] = form.as_table()
