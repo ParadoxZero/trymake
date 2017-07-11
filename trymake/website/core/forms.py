@@ -145,20 +145,47 @@ class RegistrationForm(forms.Form):
 
 
 class AddressForm(forms.Form):
-    name = forms.CharField(max_length=255,widget=forms.TextInput(attrs={'ng-model':"name"}))
-    phone = forms.CharField(validators=[phone_validator], max_length=11,widget=forms.TextInput(attrs={'ng-model':"phone"}))
+    name = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            'autofocus': True,
+            'ng-model':"name"
+            })
+    )
+    phone = forms.CharField(
+        validators=[phone_validator],
+        max_length=11,
+        widget=forms.TextInput(attrs={
+            'ng-model':"phone"
+        })
+    )
 
     address = forms.CharField(
         widget=forms.Textarea(attrs={
-            'autofocus': True,
             'ng-model' : "address"
         }),
     )
-    pincode = forms.CharField(max_length=6, validators=[pin_validator],widget=forms.TextInput(attrs={'ng-model':"pincode"}))
+    pincode = forms.CharField(
+        max_length=6,
+        validators=[pin_validator],
+        widget=forms.TextInput(attrs={
+            'ng-model':"pincode"
+        })
+    )
 
-    landmark = forms.CharField(widget=forms.TextInput(attrs={'ng-model':"landmark"}))
-    city = forms.CharField(widget=forms.TextInput(attrs={'ng-model':"city"}))
-    state = forms.ModelChoiceField(queryset=State.objects.filter(country__code='IN'),widget=forms.Select(attrs={'ng-model':"state"}))
+    landmark = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'ng-model':"landmark"
+        })
+    )
+    city = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'ng-model':"city"
+        })
+    )
+    state = forms.ModelChoiceField(
+        queryset=State.objects.filter(country__code='IN'),
+        widget=forms.Select(attrs={'ng-model':"state"}))
 
 
 class UpdateProfileForm(forms.Form):

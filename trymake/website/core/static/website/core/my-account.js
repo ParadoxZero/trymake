@@ -10,7 +10,7 @@
 
 (function () {
 
-    var app = angular.module('my_account' , ['angular-bind-html-compile' , 'ngSanitize'] , function ($interpolateProvider) {
+    var app = angular.module('my_account' , ['angular-bind-html-compile' ] , function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{[');
         $interpolateProvider.endSymbol(']}')
     }).config(function ($httpProvider) {
@@ -112,6 +112,7 @@
         };
         $scope.show_address_list = function () {
             var onSuccess = function (response) {
+                $scope.address_list = response.data.address_list;
                 console.log(response.data);
             };
             var onError = function (error) {

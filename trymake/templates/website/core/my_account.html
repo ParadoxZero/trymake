@@ -15,14 +15,18 @@
     </title>
 {% endblock %}
 {% block head %}
-    <link rel="stylesheet" href="{% static 'website/core/css/my-account.css' %}">
     <script src="{% static 'website/core/my-account.js' %}"></script>
     <script src="{% static 'website/core/angular-ng-html-bind.js' %}"></script>
-    <script src="{% static 'website/core/angular-ngSanitize.js' %}"></script>
+    <script src="{% static 'website/core/angular ui.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'website/core/css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'website/core/css/my-account.css' %}">
 {% endblock %}
 
 {% block body %}
     <body ng-app="my_account" ng-controller="account_details" ng-cloak>
+        <div ng-show="status==='error'">
+            <span>Error:</span>{[error_message]}
+        </div>
         <div class="customer">
             <h2>Customer details</h2>
             <span>Name:</span>
@@ -48,17 +52,38 @@
             </div>
             <div id="address">
                 <!-- Can change to automatic call in future -->
-                <button ng-click="show_address_list()">Show address list</button>
+                <button ng-click="show_address_list(); show='true'">Show address list</button>
                 <!-------------------------------------------->
-                <button ng-click="add_new_edit_address()">Add new address</button>
+                <button ng-click="add_new_edit_address(); show='false'">Add new address</button>
                 <form ng-submit="process_address_add()">
                     <div bind-html-compile="form_add_edit_address">
 
                     </div>
                     <input type="submit" ng-show="form_add_edit_address">
                 </form>
-                <div ng-show="status==='error'">
-                    <span>Error:</span>{[error_message]}
+                <div class="address-list" ng-show="show==='true'">
+                    <div class="panel-group" id="accordion">
+                        <div class="address" ng-repeat="address in address_list">
+                            <div class="panel panel-default">
+                                 <div class="panel-heading">
+                                    <h4 class="panel-title">
+                                      <a data-toggle="collapse" data-parent="#accordion" href="#collapse{[$index + 1]}">{[address.name]}</a>
+                                    </h4>
+                                 </div>
+                                <div id="collapse{[$index + 1]}" class="panel-collapse collapse in">
+                                    <div class="panel-body">
+                                        <span>Name: </span> {[address.name]}<br>
+                                        <span>Address: </span>{[address.address]}<br>
+                                        <span>Landmark: </span>{[address.landmark]}<br>
+                                        <span>City: </span>{[address.city]}<br>
+                                        <span>Pincode: </span>{[address.pincode]}<br>
+                                        <span>State: </span>{[address.state]}<br>
+                                        <span>Phone no.: </span>{[address.phone]}<br>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -85,7 +110,6 @@
             <h2>Complaints</h2>
             {{ complaints }}
         </div>
-
     </body>
 {% endblock %}
 
