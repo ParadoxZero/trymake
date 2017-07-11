@@ -38,6 +38,8 @@ from django.http import HttpResponseRedirect, JsonResponse
 #  2) ERROR_INVALID_INPUT: just for any arbitary error                          #
 #  3) ERROR_INVALID_ADDRESS                                                     #
 #################################################################################
+from django.urls import reverse
+
 from trymake.website.core.forms import LoginForm, RegistrationForm
 
 SESSION_CUSTOMER_ID = 'customer_id'
@@ -69,6 +71,7 @@ KEY_IS_AUTHENTICATED = 'is_authenticated'
 KEY_FINISHED = 'finished'
 KEY_RETURN_ACCEPTED = 'return_accepted'
 KEY_CANCEL_ACCEPTED = 'cancel_accepted'
+KEY_SHOW_LOGIN = 'show_login'
 
 ###########################
 # CONSTANT VALUES         #
@@ -88,6 +91,8 @@ ERROR_ALREADY_EXISTS = "Already exists"
 ERROR_MISSING_DATA = "Missing Data"
 ERROR_CUSTOMER_DOES_NOT_EXISTS = "Requested customer does not exists"
 ERROR_INVALID_TOKEN = "Invalid Token"
+ERROR_VERIFY_EMAIL = "Please verify your email"
+ERROR_LOGIN_REQUIRED = "You will need to Login to access that url"
 
 ###########################
 # Messages                #
@@ -97,7 +102,8 @@ MESSAGE_VERIFICATION_SUCCESSFUL = "Email verification successful"
 
 
 def redirect_to_origin(request) -> HttpResponseRedirect:
-    return HttpResponseRedirect(request.META.get("HTTP_REFERER"))
+    url = request.META.get("HTTP_REFERER", reverse("core:index"))
+    return HttpResponseRedirect(url)
 
 
 def form_validation_error(form) -> JsonResponse:
@@ -116,6 +122,6 @@ def get_template_context(request) -> dict:
         KEY_LOGIN_FORM: request.session.pop(KEY_LOGIN_FORM, LoginForm()),
         KEY_REGISTRATION_FORM: request.session.pop(KEY_REGISTRATION_FORM, RegistrationForm()),
         KEY_USER: request.user,
-        KEY_IS_AUTHENTICATED: request.user.is_authenticated()
-
+        KEY_IS_AUTHENTICATED: request.user.is_authenticated(),
+        KEY_SHOW_LOGIN: request.session.pop(KEY_SHOW_LOGIN,False)
     }

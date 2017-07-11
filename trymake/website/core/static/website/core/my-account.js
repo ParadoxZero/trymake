@@ -53,8 +53,8 @@
                 $scope.noError = responce.data.error_message;
                 $scope.form = responce.data.form;
                 if(responce.data.status === 'ok') {
-                    $scope.name = $('input[name=name]').val();
-                    $scope.phone = $('input[name=phone]').val();
+                    $scope.customer_current_name = $scope.customer_name;
+                    $scope.customer_current_phone = $scope.customer_phone;
                     $scope.form = null;
                 }
                 console.log(responce.data);
@@ -91,11 +91,14 @@
         $scope.process_address_add = function () {
             var param = "name="+$scope.name+"&address="+$scope.address
             +"&landmark="+$scope.landmark+"&city="+$scope.city+"&pincode="
-            +$scope.pincode+"&phone="+$scope.phone;
+            +$scope.pincode+"&phone="+$scope.phone+"&state="+$scope.state;
 
             var onSuccess = function (response) {
                 console.log(response.data);
+                $scope.status = response.data.status;
+                $scope.error_message = response.data.error_message;
                 $scope.form_add_edit_address = response.data.form;
+                $scope.form_add_edit_address = null;
             };
             var onError = function (error) {
                 console.log('Not working');
@@ -108,18 +111,17 @@
             }).then(onSuccess , onError);
         };
         $scope.show_address_list = function () {
-             var onSuccess = function (response) {
+            var onSuccess = function (response) {
                 console.log(response.data);
             };
             var onError = function (error) {
                 console.log('Not working');
             };
             $http({
-                method: 'POST',
-                url: "/account/ajax/address/get"
-            }).then(onSuccess , onError)
-        };
-
+                method  : 'POST',
+                url     : '/account/ajax/address/get'
+            }).then(onSuccess , onError);
+        }
     };
     app.controller('account_details' ,  account_details);
 }());

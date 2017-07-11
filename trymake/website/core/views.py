@@ -24,12 +24,13 @@ from trymake.apps.customer.models import Customer, Address
 from trymake.apps.orders_management.models import Order
 from trymake.apps.user_interactions.models import ProductFeedback
 from trymake.website import utils
+from trymake.website.core.decorators import customer_login_required
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, OAuthAdditionalForm, \
     ChangePasswordForm, ResetPasswordForm
 from trymake.website.core.utils import send_verification_email
 from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
-from trymake.website.utils.decorators import require_logged_out, customer_login_required
+from trymake.website.utils.decorators import require_logged_out
 
 
 #################################################################################
@@ -127,7 +128,11 @@ def process_login(request):  # REDIRECT
     form = LoginForm(request, request.POST)
     response = dict()
     if form.is_valid():
-        user = form.user
+        user = form.user # type: User
+        if not user.is_active:
+            request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_VERIFY_EMAIL
+            request.sesssion[utils.KEY_SHOW_LOGIN] = True
+            return redirect_to_origin(request)
         login(request, user)
         if not form.cleaned_data['remember_me']:
             request.session.set_expiry(0)
@@ -566,12 +571,14 @@ def process_address_add(request):  # AJAX
             city=form.cleaned_data['city'],
             pincode=form.cleaned_data['pincode'],
             phone=form.cleaned_data['phone'],
-            customer_id=request.session[utils.SESSION_CUSTOMER_ID]
+            customer_id=request.session[utils.SESSION_CUSTOMER_ID],
+            state=form.cleaned_data['state']
         )
         response[utils.KEY_ADDRESS_NAME] = address.name
         try:
             address.save()
-        except IntegrityError:
+        except IntegrityError as e:
+            print(e)
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
             response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ALREADY_EXISTS
             response[utils.KEY_FORM] = form.as_table()

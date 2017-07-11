@@ -26,14 +26,14 @@
         <div class="customer">
             <h2>Customer details</h2>
             <span>Name:</span>
-            <span ng-hide="name">
+            <span ng-hide="customer_current_name">
                 {{ customer.name }}
             </span>
-            <span ng-init="name={{ customer.name }}" ng-show="name">
-                    {[name]}
+            <span ng-show="name" ng-init="customer_current_name={{ customer.name }}">
+                    {[customer_current_name]}
             </span><br>
             <span>Email:</span><span>{{ customer.user.email }}</span><br>
-            <span>Phone no:</span><span ng-init="phone={{ customer.phone }}">{[phone]}</span><br>
+            <span>Phone no:</span><span ng-init="customer_current_phone={{ customer.phone }}">{[customer_current_phone]}</span><br>
             <div id="update-profile">
                 <form ng-click="update_profile_form()">
                     {% csrf_token %}
@@ -51,10 +51,15 @@
                 <button ng-click="show_address_list()">Show address list</button>
                 <!-------------------------------------------->
                 <button ng-click="add_new_edit_address()">Add new address</button>
-                <form ng-submit="add_new_edit_address()">
-                    <div bind-html-compile="form_add_edit_address"></div>
+                <form ng-submit="process_address_add()">
+                    <div bind-html-compile="form_add_edit_address">
+
+                    </div>
                     <input type="submit" ng-show="form_add_edit_address">
                 </form>
+                <div ng-show="status==='error'">
+                    <span>Error:</span>{[error_message]}
+                </div>
             </div>
         </div>
         <div class="orders"  ng-init="get_list = {

@@ -25,13 +25,3 @@ def require_logged_out(func):
         return func(request)
 
     return new_func
-
-
-def customer_login_required(func):
-    def new_func(request):
-        if request.user.is_authenticated():
-            if request.user.groups.filter(name=Customer.GROUP_NAME).exists():
-                return func(request)
-        return HttpResponseForbidden()
-
-    return new_func
