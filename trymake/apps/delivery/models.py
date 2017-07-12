@@ -24,18 +24,18 @@ TYPES_CHOICES = (
 )
 
 
-class DeliveryOption(models.Model):
+class DeliveryMode(models.Model):
     name = models.CharField(max_length=500)
     type = models.CharField(max_length=2, choices=TYPES_CHOICES)
-    product = models.ManyToManyField(Product)
 
 
-class FlatRateDelivery(models.Model):
+class FlatRate(models.Model):
     cost = models.DecimalField(max_digits=6, decimal_places=2)
-    delivery_option = models.ForeignKey(DeliveryOption)
+    delivery_option = models.OneToOneField(DeliveryMode)
 
 
-class Zone(models.Model):
+class ZonePrice(models.Model):
+    delivery_mode = models.ForeignKey(DeliveryMode)
     zone_name = models.CharField(max_length=500)
     cost = models.DecimalField(max_digits=6, decimal_places=2)
     inclusive_states = models.ManyToManyField(State)
