@@ -62,6 +62,7 @@ class ReturnPolicy(models.Model):
 class Stock(models.Model):
     vendor = models.ForeignKey(Vendor, db_index=True)
     product = models.ForeignKey(Product, db_index=True, to_field='slug')
+    sku = models.CharField(max_length=8, unique=True, db_index=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     discounted_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     stock = models.PositiveIntegerField()

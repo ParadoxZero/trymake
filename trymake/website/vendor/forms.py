@@ -56,3 +56,4 @@ class ReturnPolicyForm(forms.ModelForm):
     class Meta:
         model = ReturnPolicy
         exclude = ['vendor']
+

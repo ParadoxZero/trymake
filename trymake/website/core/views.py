@@ -542,7 +542,7 @@ def get_address_form(request):  # AJAX
                 "pincode": address.pincode,
                 "landmark": address.landmark,
                 "city": address.city,
-                "state": address.state
+                "state": address.state_id
             })
             response[utils.KEY_FORM] = form.as_table()
         else:
