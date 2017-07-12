@@ -47,21 +47,22 @@
                     <table bind-html-compile="form"> </table>
                         {% csrf_token %}
                         <input type="submit">
-                        <h3 ng-show="status==='error'">Status : {[noError]}</h3>
                 </form>
             </div>
             <div id="address">
                 <!-- Can change to automatic call in future -->
-                <button ng-click="show_address_list(); show='true'">Show address list</button>
+                <button ng-click="show_address_list()">Show address list</button>
                 <!-------------------------------------------->
-                <button ng-click="add_new_edit_address(); show='false'">Add new address</button>
-                <form ng-submit="process_address_add()">
-                    <div bind-html-compile="form_add_edit_address">
-
-                    </div>
-                    <input type="submit" ng-show="form_add_edit_address">
+                <button ng-click="add_new_address();">Add new address</button>
+                <form ng-submit="process_address_add()" ng-show="!show_add_list && !edit_add && add_new_add">
+                    <div bind-html-compile="form_add_address"></div>
+                    <input type="submit" ng-show="form_add_address">
                 </form>
-                <div class="address-list" ng-show="show==='true'">
+                <form ng-submit="submit_edit_address()" ng-show="!show_add_list && edit_add && !add_new_add">
+                    <div bind-html-compile="form_edit_address"></div>
+                    <input type="submit" ng-show="form_edit_address">
+                </form>
+                <div class="address-list" ng-show="show_add_list">
                     <div class="panel-group" id="accordion">
                         <div class="address" ng-repeat="address in address_list">
                             <div class="panel panel-default">
@@ -69,6 +70,7 @@
                                     <h4 class="panel-title">
                                       <a data-toggle="collapse" data-parent="#accordion" href="#collapse{[$index + 1]}">{[address.name]}</a>
                                     </h4>
+                                     <button ng-click="get_edit_address(address)">Edit address</button>
                                  </div>
                                 <div id="collapse{[$index + 1]}" class="panel-collapse collapse in">
                                     <div class="panel-body">
