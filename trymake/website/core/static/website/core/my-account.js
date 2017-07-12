@@ -71,13 +71,20 @@
                 headers : {'Content-Type': 'application/x-www-form-urlencoded'}
             }).then(onSuccess , onError);
         };
-        $scope.add_new_edit_address = function () {
-            //TODO: Add param for address_name and pass it.
-            //var param = 'address_name='+$scope.address_name;
-
+        $scope.add_new_address = function () {
+            $scope.show_add_list = false;
+            $scope.edit_add = false;
+            $scope.add_new_add = true;
+            $scope.name = null;
+            $scope.address = null;
+            $scope.landmark = null;
+            $scope.city = null;
+            $scope.pincode = null;
+            $scope.state = null;
+            $scope.phone = null;
             var onSuccess = function (response) {
                 console.log(response.data);
-                $scope.form_add_edit_address = response.data.form;
+                $scope.form_add_address = response.data.form;
             };
             var onError = function (error) {
                 console.log('Not working');
@@ -98,7 +105,6 @@
                 $scope.status = response.data.status;
                 $scope.error_message = response.data.error_message;
                 $scope.form_add_edit_address = response.data.form;
-                $scope.form_add_edit_address = null;
             };
             var onError = function (error) {
                 console.log('Not working');
@@ -111,6 +117,8 @@
             }).then(onSuccess , onError);
         };
         $scope.show_address_list = function () {
+            $scope.show_add_list = true;
+            $scope.edit_add = false;
             var onSuccess = function (response) {
                 $scope.address_list = response.data.address_list;
                 console.log(response.data);
@@ -122,7 +130,56 @@
                 method  : 'POST',
                 url     : '/account/ajax/address/get'
             }).then(onSuccess , onError);
-        }
+        };
+        $scope.get_edit_address = function (address) {
+            $scope.show_add_list=false;
+            $scope.edit_add = true;
+            $scope.add_new_add = false;
+            var onSuccess = function (response) {
+                console.log(response.data);
+                $scope.form_edit_address = response.data.form;
+                $scope.name = address.name;
+                $scope.address = address.address;
+                $scope.landmark = address.landmark;
+                $scope.city = address.city;
+                $scope.pincode = address.pincode;
+                $scope.state = address.state;
+                $scope.phone = address.phone;
+            };
+            var onError = function (error) {
+                console.log('Not working');
+            };
+            $http({
+                method  : 'POST',
+                url     : '/account/form/address/get',
+                data    :  "address_name="+address.name,
+                headers : {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(onSuccess , onError);
+        };
+        $scope.submit_edit_address = function () {
+            var param = "name="+$scope.name+"&address="+$scope.address
+            +"&landmark="+$scope.landmark+"&city="+$scope.city+"&pincode="
+            +$scope.pincode+"&phone="+$scope.phone+"&state="+$scope.state;
+
+            var onSuccess = function (response) {
+                console.log(response.data);
+                $scope.status = response.data.status;
+                $scope.error_message = response.data.error_message;
+                $scope.form_edit_address = response.data.form;
+                if(response.data.status === 'ok'){
+                    $scope.form_edit_address = null;
+                }
+            };
+            var onError = function (error) {
+                console.log('Not working');
+            };
+            $http({
+                method  : 'POST',
+                url     : '/account/form/address/edit',
+                data    :  param,
+                headers : {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(onSuccess , onError);
+        };
     };
     app.controller('account_details' ,  account_details);
 }());
