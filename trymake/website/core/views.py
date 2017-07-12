@@ -544,6 +544,7 @@ def get_address_form(request):  # AJAX
                 "city": address.city,
                 "state": address.state_id
             })
+            form.fields['name'].disabled = True
             response[utils.KEY_FORM] = form.as_table()
         else:
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
