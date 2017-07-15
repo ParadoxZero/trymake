@@ -205,8 +205,7 @@ def verify_phone(request):
         return render(request, "website/core/otp.html", context)
     if request.method == "POST":
         otp_secret = request.session[utils.SESSION_OTP_SECRET]
-        form = PhoneOTPForm(request.POST)
-        form.otp_secret = otp_secret
+        form = PhoneOTPForm(otp_secret,request.POST)
         if form.is_valid():
             customer = get_customer(user=request.user)
             customer.verify_phone()

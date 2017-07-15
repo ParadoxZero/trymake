@@ -17,13 +17,9 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
 
-from trymake.apps.orders_management.models import Order
-from trymake.apps.product.models import Product
-from trymake.apps.user_interactions.models import Feedback, OrderFeedback, ProductFeedback
 from trymake.apps.customer.models import State, Customer
-from trymake.website.core.utils import send_OTP
+from trymake.apps.user_interactions.models import Feedback, OrderFeedback, ProductFeedback
 from trymake.website.core.validators import email_doesnt_exist, pin_validator, phone_validator, phone_doesnt_exist, \
     otp_validator
 
@@ -307,9 +303,10 @@ class PhoneNumberForm(forms.Form):
 class PhoneOTPForm(forms.Form):
     otp = forms.CharField(validators=[otp_validator], max_length=6)
 
-    def __int__(self, *args, **kwargs):
-        self.otp_secret = None
+    def __init__(self, secret=None, *args, **kwargs):
+        self.otp_secret = secret
         super(PhoneOTPForm, self).__init__(*args, **kwargs)
+
 
     def clean(self):
         otp = pyotp.TOTP(self.otp_secret)
