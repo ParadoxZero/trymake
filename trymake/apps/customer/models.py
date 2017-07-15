@@ -12,6 +12,7 @@ Proprietary and confidential
 
 import uuid
 
+import pyotp
 from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail
 from django.core.validators import RegexValidator
@@ -60,8 +61,16 @@ class Customer(models.Model):
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
     phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
+    phone_verified = models.BooleanField(default=False)
 
     default_address = models.ForeignKey('Address', null=True, on_delete=models.SET_NULL, related_name='default_address')
+
+    opt_secret = models.CharField(max_length=16, default=pyotp.random_base32)
+
+    def verify_phone(self, save=True):
+        self.phone_verified = True
+        if save:
+            self.save()
 
     def mail(self, subject, message, from_mail='no-reply@notifications.trymake.com') -> None:
         send_mail(subject=subject, message=message, from_email=from_mail, recipient_list=[self.email])

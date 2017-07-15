@@ -44,6 +44,8 @@ from trymake.website.core.forms import LoginForm, RegistrationForm
 
 SESSION_CUSTOMER_ID = 'customer_id'
 SESSION_PAGE_DETAIL = 'page_details'
+SESSION_OTP_SECRET = 'otp_secret'
+SESSION_PHONE_NUMBER = 'phone_number'
 
 KEY_STATUS = 'status'
 KEY_ERROR_MESSAGE = 'error_message'
