@@ -18,6 +18,8 @@
     <script src="{% static 'website/core/login.js' %}" ></script>
 {% endblock %}
 {% block body %}
+    {{ error_message }}
+    {{ message }}
     <body ng-app="login">
         <div ng-controller="loginEmail" ng-cloak>
             <div ng-show="user.email_registered || !user">
