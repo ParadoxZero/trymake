@@ -66,10 +66,11 @@ urlpatterns = [
     # Redirect view
     url(r'logout$', views.logout_view, name="logout"),
     url(r'^login$', views.process_login, name="login"),
-    url(r'^verify', views.process_email_verification, name="process_email_verification"),
+    url(r'^verify$', views.process_email_verification, name="process_email_verification"),
     url('^password/reset$', views.password_reset, name="password_reset"),
-    url(r'^oauth_create', views.oauth_create, name="oauth_create"),
-
+    url(r'^oauth_create$', views.oauth_create, name="oauth_create"),
+    url(r'^verify_phone$', views.verify_phone, name="verify_phone"),
+    url(r'^send_otp$', views.send_otp, name="send_otp"),
     # ACCOUNT views - core:account url namespace
     url(r'^account/', include(my_account_urls, namespace="account")),
 

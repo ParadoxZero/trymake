@@ -15,9 +15,9 @@ from django.core.validators import RegexValidator
 
 from trymake.apps.customer.models import Customer
 
-phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
-pin_validator = RegexValidator(regex=r"[0-9]{6}", message="Format: 999999")
-
+phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Must be 10 digits")
+pin_validator = RegexValidator(regex=r"[0-9]{6}", message="Pin code has only 6 digits")
+otp_validator = RegexValidator(regex=r"[0-9]{6}", message="Only 6 digit OTP.")
 
 def email_doesnt_exist(email):
     if Customer.objects.filter(email=email).exists():

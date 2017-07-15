@@ -11,17 +11,17 @@ Proprietary and confidential
 """
 import uuid
 
+import pyotp
 from django import forms
+from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
 
-from trymake.apps.orders_management.models import Order
-from trymake.apps.product.models import Product
-from trymake.apps.user_interactions.models import Feedback, OrderFeedback, ProductFeedback
 from trymake.apps.customer.models import State, Customer
-from trymake.website.core.validators import email_doesnt_exist, pin_validator, phone_validator, phone_doesnt_exist
+from trymake.apps.user_interactions.models import Feedback, OrderFeedback, ProductFeedback
+from trymake.website.core.validators import email_doesnt_exist, pin_validator, phone_validator, phone_doesnt_exist, \
+    otp_validator
 
 
 class EnterEmailForm(forms.Form):
@@ -149,43 +149,43 @@ class AddressForm(forms.Form):
         max_length=255,
         widget=forms.TextInput(attrs={
             'autofocus': True,
-            'ng-model':"name"
-            })
+            'ng-model': "name"
+        })
     )
     phone = forms.CharField(
         validators=[phone_validator],
         max_length=11,
         widget=forms.TextInput(attrs={
-            'ng-model':"phone"
+            'ng-model': "phone"
         })
     )
 
     address = forms.CharField(
         widget=forms.Textarea(attrs={
-            'ng-model' : "address"
+            'ng-model': "address"
         }),
     )
     pincode = forms.CharField(
         max_length=6,
         validators=[pin_validator],
         widget=forms.TextInput(attrs={
-            'ng-model':"pincode"
+            'ng-model': "pincode"
         })
     )
 
     landmark = forms.CharField(
         widget=forms.TextInput(attrs={
-            'ng-model':"landmark"
+            'ng-model': "landmark"
         })
     )
     city = forms.CharField(
         widget=forms.TextInput(attrs={
-            'ng-model':"city"
+            'ng-model': "city"
         })
     )
     state = forms.ModelChoiceField(
         queryset=State.objects.filter(country__code='IN'),
-        widget=forms.Select(attrs={'ng-model':"state"}))
+        widget=forms.Select(attrs={'ng-model': "state"}))
 
 
 class UpdateProfileForm(forms.Form):
@@ -296,5 +296,21 @@ class RegisterComplaint(forms.Form):
     )
 
 
-class OAuthAdditionalForm(forms.Form):
+class PhoneNumberForm(forms.Form):
     phone = forms.CharField(validators=[phone_validator, phone_doesnt_exist], max_length=11)
+
+
+class PhoneOTPForm(forms.Form):
+    otp = forms.CharField(validators=[otp_validator], max_length=6)
+
+    def __init__(self, secret=None, *args, **kwargs):
+        self.otp_secret = secret
+        super(PhoneOTPForm, self).__init__(*args, **kwargs)
+
+
+    def clean(self):
+        otp = pyotp.TOTP(self.otp_secret)
+        if not otp.verify(self.cleaned_data['otp'], valid_window=settings.OTP_VALID_DURATION):
+            raise ValidationError(message="Invalid OTP", code="invalid")
+        return self.cleaned_data
+

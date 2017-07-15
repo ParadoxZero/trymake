@@ -197,3 +197,6 @@ PRODUCT_ADDITIONAL_IMAGES_BASE_URL = 'product/additional_images'
 # 2.5MB     - 2621440
 # 5MB       - 5242880
 MAX_UPLOAD_SIZE = "2621440"
+
+SMS_BACKEND = "trymake.apps.SMS_manager.backends.console.SmsBackend"
+OTP_VALID_DURATION = 20

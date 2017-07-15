@@ -19,6 +19,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 
 # Create your models here.
+from trymake.apps.delivery.models import DeliveryMode
 from trymake.apps.product.models import Product
 
 
@@ -62,11 +63,13 @@ class ReturnPolicy(models.Model):
 class Stock(models.Model):
     vendor = models.ForeignKey(Vendor, db_index=True)
     product = models.ForeignKey(Product, db_index=True, to_field='slug')
+    sku = models.CharField(max_length=8, unique=True, db_index=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
     discounted_price = models.DecimalField(max_digits=8, decimal_places=2, null=True)
     stock = models.PositiveIntegerField()
     return_policy = models.ForeignKey(ReturnPolicy)
     date_added = models.DateTimeField(default=datetime.now)
+    delivery_methods = models.ForeignKey(DeliveryMode)
 
 
 # ----------------------- #

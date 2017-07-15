@@ -9,7 +9,7 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
 
 """
-
+import pyotp
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
@@ -26,9 +26,9 @@ from trymake.apps.user_interactions.models import ProductFeedback
 from trymake.website import utils
 from trymake.website.core.decorators import customer_login_required
 from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginForm, AddressForm, FeedbackForm, \
-    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, OAuthAdditionalForm, \
-    ChangePasswordForm, ResetPasswordForm
-from trymake.website.core.utils import send_verification_email
+    UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, \
+    ChangePasswordForm, ResetPasswordForm, PhoneNumberForm, PhoneOTPForm
+from trymake.website.core.utils import send_verification_email, send_OTP, get_customer
 from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
 from trymake.website.utils.decorators import require_logged_out
 
@@ -90,14 +90,15 @@ def password_reset(request):
         except KeyError:
             return HttpResponseForbidden()
         if Customer.validate_password_token(request, token):
-            return render(request, "website/core/reset_password.html", {utils.KEY_FORM:ResetPasswordForm()})
+            return render(request, "website/core/reset_password.html", {utils.KEY_FORM: ResetPasswordForm()})
         else:
             return HttpResponseForbidden()
     elif request.method == "POST":
         form = ResetPasswordForm(request.POST)
         if form.is_valid():
             new_password = form.cleaned_data['password1']
-            customer = Customer.objects.select_related('user').get(id=request.session.pop(Customer.PASSWORD_RESET_CUSTOMER,None))
+            customer = Customer.objects.select_related('user').get(
+                id=request.session.pop(Customer.PASSWORD_RESET_CUSTOMER, None))
             customer.user.set_password(new_password)
             customer.user.save()
             return HttpResponseRedirect(reverse("core:index"))
@@ -126,9 +127,8 @@ def process_login(request):  # REDIRECT
     Login phase two when email exists
     """
     form = LoginForm(request, request.POST)
-    response = dict()
     if form.is_valid():
-        user = form.user # type: User
+        user = form.user  # type: User
         if not user.is_active:
             request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_VERIFY_EMAIL
             request.sesssion[utils.KEY_SHOW_LOGIN] = True
@@ -171,7 +171,6 @@ def process_email_verification(request):
     return HttpResponseRedirect(reverse('core:index'))
 
 
-
 @login_required
 def oauth_create(request):
     c = Customer.objects.filter(user=request.user)
@@ -179,15 +178,43 @@ def oauth_create(request):
         request.session[utils.SESSION_CUSTOMER_ID] = c.first().id.hex
         return HttpResponseRedirect(reverse('core:account:myaccount'))
     if request.method == "GET":
-        return render(request, "website/core/phone_form.html", {utils.KEY_FORM: OAuthAdditionalForm()})
+        context = get_template_context(request)
+        context[utils.KEY_FORM] = PhoneNumberForm()
+        return render(request, "website/core/oauth_create.html", context)
     if request.method == "POST":
-        form = OAuthAdditionalForm(request.POST)
+        form = PhoneNumberForm(request.POST)
         if form.is_valid():
             user = request.user  # type: User
             customer = Customer.create_with_existing_user(user, form.cleaned_data['phone'])
-            return HttpResponseRedirect(reverse('core:oauth_create'))
+            request.session[utils.SESSION_CUSTOMER_ID] = customer.id.hex
+            return HttpResponseRedirect(reverse('core:verify_phone'))
         else:
-            return render(request, "website/core/phone_form.html", {utils.KEY_FORM: form})
+            return HttpResponseRedirect(reverse('core:oauth_create'))
+
+
+@login_required
+def verify_phone(request):
+    if request.method == "GET":
+        context = get_template_context(request)
+        context[utils.KEY_FORM] = PhoneOTPForm()
+        otp_secret = pyotp.random_base32()
+        request.session[utils.SESSION_OTP_SECRET] = otp_secret
+        otp = pyotp.TOTP(otp_secret).now()
+        customer = get_customer(user=request.user)
+        send_OTP(customer.phone, otp)
+        return render(request, "website/core/otp.html", context)
+    if request.method == "POST":
+        otp_secret = request.session[utils.SESSION_OTP_SECRET]
+        form = PhoneOTPForm(otp_secret,request.POST)
+        if form.is_valid():
+            customer = get_customer(user=request.user)
+            customer.verify_phone()
+            return HttpResponseRedirect(reverse('core:account:myaccount'))
+        else:
+            context = get_template_context(request)
+            context[utils.KEY_FORM] = form
+            return render(request, "website/core/otp.html", context)
+
 
 
 #################################################################################
@@ -270,6 +297,13 @@ def email_verification(request):
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
     return JsonResponse(response)
 
+@login_required
+def send_otp(request):
+    otp_secret = request.session[utils.SESSION_OTP_SECRET]
+    otp = pyotp.TOTP(otp_secret)
+    customer = get_customer(user=request.user)
+    send_OTP(customer.phone, otp.now())
+    return JsonResponse({utils.KEY_STATUS:utils.STATUS_OKAY})
 
 #################################################################################
 # AJAX Account Views                                                            #
@@ -542,8 +576,9 @@ def get_address_form(request):  # AJAX
                 "pincode": address.pincode,
                 "landmark": address.landmark,
                 "city": address.city,
-                "state": address.state
+                "state": address.state_id
             })
+            form.fields['name'].disabled = True
             response[utils.KEY_FORM] = form.as_table()
         else:
             response[utils.KEY_STATUS] = utils.STATUS_ERROR

@@ -21,8 +21,8 @@ from trymake.apps.vendor.models import Stock, Vendor
 
 
 class Cart(models.Model):
-    customer = models.OneToOneField(Customer, db_index=True)
-    date_changed = models.DateTimeField()
+    customer = models.ForeignKey(Customer)
+    last_accessed = models.DateTimeField()
 
     def add_item(self, sku: int, qty: int):
         vendor_stock = Stock.objects.get(pk=sku)
