@@ -14,8 +14,13 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db import models
 
-from trymake.apps.commons.models import Permissions
 
+class Permissions(models.Model):
+    orders = models.BooleanField()
+    complaints = models.BooleanField()
+    customer_email = models.BooleanField()
+    comments = models.BooleanField()
+    # TODO add more permissions
 
 class Staff(models.Model):
     user = models.OneToOneField(User)
