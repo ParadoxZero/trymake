@@ -153,7 +153,7 @@ class Customer(models.Model):
             return False
         if t.been_used:
             return False
-        if t.check_type(UniqueToken.EMAIL_VERIFICATION_TOKEN):
+        if not t.check_type(UniqueToken.EMAIL_VERIFICATION_TOKEN):
             return False
         t.customer.is_verified = True
         t.customer.save()

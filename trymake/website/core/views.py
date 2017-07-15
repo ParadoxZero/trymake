@@ -205,7 +205,7 @@ def verify_phone(request):
         return render(request, "website/core/otp.html", context)
     if request.method == "POST":
         otp_secret = request.session[utils.SESSION_OTP_SECRET]
-        form = PhoneOTPForm(otp_secret,request.POST)
+        form = PhoneOTPForm(otp_secret, request.POST)
         if form.is_valid():
             customer = get_customer(user=request.user)
             customer.verify_phone()
@@ -214,7 +214,6 @@ def verify_phone(request):
             context = get_template_context(request)
             context[utils.KEY_FORM] = form
             return render(request, "website/core/otp.html", context)
-
 
 
 #################################################################################
@@ -297,13 +296,15 @@ def email_verification(request):
     response[utils.KEY_STATUS] = utils.STATUS_OKAY
     return JsonResponse(response)
 
+
 @login_required
 def send_otp(request):
     otp_secret = request.session[utils.SESSION_OTP_SECRET]
     otp = pyotp.TOTP(otp_secret)
     customer = get_customer(user=request.user)
     send_OTP(customer.phone, otp.now())
-    return JsonResponse({utils.KEY_STATUS:utils.STATUS_OKAY})
+    return JsonResponse({utils.KEY_STATUS: utils.STATUS_OKAY})
+
 
 #################################################################################
 # AJAX Account Views                                                            #
