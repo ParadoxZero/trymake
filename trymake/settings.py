@@ -192,8 +192,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['profile','email']
 # Custom settings
 
 PRODUCT_IMAGE_BASE_URL = 'product/image/'
-PRODUCT_ADDITIONAL_IMAGES_BASE_URL = 'product/additional_images'
-
+PRODUCT_ADDITIONAL_IMAGES_BASE_URL = 'product/additional_images/'
+CATEGORY_IMAGE_URL = 'category/'
 # 2.5MB     - 2621440
 # 5MB       - 5242880
 MAX_UPLOAD_SIZE = "2621440"

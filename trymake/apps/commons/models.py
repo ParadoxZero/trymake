@@ -27,12 +27,3 @@ class Image(models.Model):
             'name': self.name,
             'image_url': self.image.url
         }
-
-
-
-class Permissions(models.Model):
-    orders = models.BooleanField()
-    complaints = models.BooleanField()
-    customer_email = models.BooleanField()
-    comments = models.BooleanField()
-    # TODO add more permissions

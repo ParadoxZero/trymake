@@ -14,11 +14,16 @@ from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
 
-from trymake.apps.customer.models import Customer, Address
+from trymake.apps.customer.models import Customer
 from trymake.apps.product.models import Product
 from trymake.apps.validators import phone_validator
 from trymake.apps.vendor.models import Stock, Vendor
 
+
+# TODO Change order management system
+# Cart item should be dynamic. In case the item is changed it should be reflected
+# Whereas Order Item should be static, it should be a seperate entity and no changes should be
+# Possible to order item. Same with order address and other details.
 
 class Cart(models.Model):
     customer = models.ForeignKey(Customer)
@@ -43,8 +48,10 @@ class Cart(models.Model):
         self.date_changed = timezone.now()
         self.save()
 
-    def buy(self, order_id: int):
-        item_list = Item.objects.filter(cart=self).update(cart=None, order_id=order_id)
+    def buy(self):
+        # TODO Create order
+        # item_list = Item.objects.filter(cart=self).update(cart=None, order_id=order_id)
+        pass
 
 
 class Order(models.Model):
@@ -230,6 +237,7 @@ class Item(models.Model):
             self.VENDOR_ID: self.vendor_id,
             self.PRODUCT_ID: self.product_id
         }
+
 
 class Returns(models.Model):
     item = models.OneToOneField(Item)

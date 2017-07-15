@@ -17,10 +17,8 @@ from django.core.files.uploadedfile import UploadedFile
 from django.db import models
 
 # Create your models here.
-from django.utils.datetime_safe import datetime
 
 from trymake import settings
-from trymake.apps.commons.models import Image
 
 
 class AttributeName(models.Model):
@@ -36,6 +34,11 @@ def get_upload_path_additional_image(instance: 'AdditionalImages', filename: str
     filename, file_ext = os.path.splitext(filename)
     return '{0}{1}/{2}{3}'.format(settings.PRODUCT_ADDITIONAL_IMAGES_BASE_URL, instance.product.slug, instance.name,
                                   file_ext)
+
+
+def get_upload_path_category_image(instance: 'Category', filename: str):
+    filename, file_extension = os.path.splitext(filename)
+    return '{0}{1}{2}'.format(settings.CATEGORY_IMAGE_URL, instance.slug, file_extension)
 
 
 class Product(models.Model):
@@ -119,10 +122,11 @@ class AttributeValues(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=250, unique=True, db_index=True)
-    image = models.ForeignKey(Image)
+    image = models.ImageField(upload_to=get_upload_path_category_image)
     parent_category = models.ForeignKey("self", null=True)
     attributes = models.ManyToManyField(AttributeName)
     products = models.ManyToManyField(Product)
+    slug = models.CharField(max_length=20, unique=True, db_index=True)
 
     def get_filters(self):
         attribute_list = self.attributes.all()
