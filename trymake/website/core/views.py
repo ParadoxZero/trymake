@@ -29,7 +29,7 @@ from trymake.website.core.forms import EnterEmailForm, RegistrationForm, LoginFo
     UpdateProfileForm, ProductFeedbackForm, OrderFeedbackForm, RegisterComplaint, \
     ChangePasswordForm, ResetPasswordForm, PhoneNumberForm, PhoneOTPForm
 from trymake.website.core.utils import send_verification_email, send_OTP, get_customer
-from trymake.website.utils import redirect_to_origin, form_validation_error, get_template_context
+from trymake.website.utils import redirect_to_origin, JSON_form_validation_error, get_template_context
 from trymake.website.utils.decorators import require_logged_out
 
 
@@ -90,7 +90,7 @@ def password_reset(request):
         except KeyError:
             return HttpResponseForbidden()
         if Customer.validate_password_token(request, token):
-            return render(request, "website/core/reset_password.html", {utils.KEY_FORM: ResetPasswordForm()})
+            return render(request, "website/core/reset_password.html", {utils.KEY_FORM: ResetPasswordForm().as_ul()})
         else:
             return HttpResponseForbidden()
     elif request.method == "POST":
@@ -103,7 +103,7 @@ def password_reset(request):
             customer.user.save()
             return HttpResponseRedirect(reverse("core:index"))
         else:
-            return render(request, "website/core/reset_password.html", {utils.KEY_FORM: form})
+            return render(request, "website/core/reset_password.html", {utils.KEY_FORM: form.as_ul()})
     else:
         return HttpResponseForbidden()
 
@@ -141,7 +141,7 @@ def process_login(request):  # REDIRECT
     else:
         request.session[utils.KEY_STATUS] = utils.STATUS_ERROR
         request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_INCORRECT_CREDENTIALS
-        request.session[utils.KEY_LOGIN_FORM] = form.as_table()
+        request.session[utils.KEY_LOGIN_FORM] = form.as_ul()
     return redirect_to_origin(request)
 
 
@@ -179,7 +179,7 @@ def oauth_create(request):
         return HttpResponseRedirect(reverse('core:account:myaccount'))
     if request.method == "GET":
         context = get_template_context(request)
-        context[utils.KEY_FORM] = PhoneNumberForm()
+        context[utils.KEY_FORM] = PhoneNumberForm().as_ul()
         return render(request, "website/core/oauth_create.html", context)
     if request.method == "POST":
         form = PhoneNumberForm(request.POST)
@@ -189,6 +189,7 @@ def oauth_create(request):
             request.session[utils.SESSION_CUSTOMER_ID] = customer.id.hex
             return HttpResponseRedirect(reverse('core:verify_phone'))
         else:
+            request.session[utils.KEY_FORM] = form.as_ul()
             return HttpResponseRedirect(reverse('core:oauth_create'))
 
 
@@ -196,7 +197,7 @@ def oauth_create(request):
 def verify_phone(request):
     if request.method == "GET":
         context = get_template_context(request)
-        context[utils.KEY_FORM] = PhoneOTPForm()
+        context[utils.KEY_FORM] = PhoneOTPForm().as_ul()
         otp_secret = pyotp.random_base32()
         request.session[utils.SESSION_OTP_SECRET] = otp_secret
         otp = pyotp.TOTP(otp_secret).now()
@@ -212,7 +213,7 @@ def verify_phone(request):
             return HttpResponseRedirect(reverse('core:account:myaccount'))
         else:
             context = get_template_context(request)
-            context[utils.KEY_FORM] = form
+            context[utils.KEY_FORM] = form.as_ul()
             return render(request, "website/core/otp.html", context)
 
 
@@ -254,7 +255,7 @@ def check_account_exists(request):  # AJAX
             response[utils.KEY_EMAIL_REGISTERED] = False
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 @require_POST
@@ -274,7 +275,7 @@ def process_registration(request):  # AJAX
         send_verification_email(customer)
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 @require_POST
@@ -472,7 +473,7 @@ def get_update_profile_form(request):  # AJAX
         utils.KEY_FORM: UpdateProfileForm(initial={
             "name": customer.name,
             "phone": customer.phone
-        }).as_table()
+        }).as_ul()
     })
 
 
@@ -489,7 +490,7 @@ def update_customer_profile(request):  # AJAX
         customer.save()
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 # ---------------------- #
@@ -501,7 +502,7 @@ def update_customer_profile(request):  # AJAX
 def get_feedback_form(request):  # AJAX
     return JsonResponse({
         utils.KEY_STATUS: utils.STATUS_OKAY,
-        utils.KEY_FORM: ProductFeedbackForm().as_table()
+        utils.KEY_FORM: ProductFeedbackForm().as_ul()
     })
 
 
@@ -521,7 +522,7 @@ def process_product_feedback(request, product_id: str):
             })
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 # ------------------------ #
@@ -539,12 +540,12 @@ def process_feedback(request):  # AJAX
         form.save_feedback(customer)
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 def get_product_feedback_form(request):
     return JsonResponse({
-        utils.KEY_FORM: ProductFeedback(),
+        utils.KEY_FORM: ProductFeedbackForm().as_ul(),
         utils.KEY_STATUS: utils.STATUS_OKAY
     })
 
@@ -580,13 +581,13 @@ def get_address_form(request):  # AJAX
                 "state": address.state_id
             })
             form.fields['name'].disabled = True
-            response[utils.KEY_FORM] = form.as_table()
+            response[utils.KEY_FORM] = form.as_ul()
         else:
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
             response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ADDRESS_NOT_FOUND
             response[utils.KEY_ADDRESS_NAME] = request.POST[utils.KEY_ADDRESS_NAME]
     else:
-        response[utils.KEY_FORM] = AddressForm().as_table()
+        response[utils.KEY_FORM] = AddressForm().as_ul()
     return JsonResponse(response)
 
 
@@ -617,10 +618,10 @@ def process_address_add(request):  # AJAX
             print(e)
             response[utils.KEY_STATUS] = utils.STATUS_ERROR
             response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ALREADY_EXISTS
-            response[utils.KEY_FORM] = form.as_table()
+            response[utils.KEY_FORM] = form.as_ul()
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 # In case the address name doesn't exists for given user,
@@ -650,7 +651,7 @@ def edit_address(request):  # AJAX
             response[utils.KEY_ERROR_MESSAGE] = utils.ERROR_ADDRESS_NOT_FOUND
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 # ------------------- #
@@ -662,7 +663,7 @@ def edit_address(request):  # AJAX
 @customer_login_required
 def get_order_feedback_form(request):
     return JsonResponse({
-        utils.KEY_FORM: OrderFeedbackForm(),
+        utils.KEY_FORM: OrderFeedbackForm().as_ul(),
         utils.KEY_STATUS: utils.STATUS_OKAY
     })
 
@@ -677,7 +678,7 @@ def process_order_feedback(request, order_id):
         form.save_feedback(order_id)
         return JsonResponse(response)
     else:
-        return form_validation_error(form)
+        return JSON_form_validation_error(form)
 
 
 # ----------------- #
@@ -689,7 +690,7 @@ def process_order_feedback(request, order_id):
 def get_complaint_form(request):
     return JsonResponse({
         utils.KEY_STATUS: utils.STATUS_OKAY,
-        utils.KEY_FORM: RegisterComplaint()
+        utils.KEY_FORM: RegisterComplaint().as_ul()
     })
 
 
@@ -707,4 +708,4 @@ def process_complaint_form(request):
             utils.KEY_STATUS: utils.STATUS_OKAY,
             utils.KEY_COMPLAINT_NUMBER: c.id
         })
-    return form_validation_error(form)
+    return JSON_form_validation_error(form)
