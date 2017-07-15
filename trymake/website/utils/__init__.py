@@ -108,11 +108,11 @@ def redirect_to_origin(request) -> HttpResponseRedirect:
     return HttpResponseRedirect(url)
 
 
-def form_validation_error(form) -> JsonResponse:
+def JSON_form_validation_error(form) -> JsonResponse:
     return JsonResponse({
         KEY_STATUS: STATUS_ERROR,
         KEY_ERROR_MESSAGE: ERROR_INVALID_INPUT,
-        KEY_FORM: form.as_table()
+        KEY_FORM: form.as_ul()
     })
 
 
@@ -121,9 +121,10 @@ def get_template_context(request) -> dict:
         KEY_STATUS: request.session.pop(KEY_STATUS, STATUS_OKAY),
         KEY_MESSAGE: request.session.pop(KEY_MESSAGE, None),
         KEY_ERROR_MESSAGE: request.session.pop(KEY_ERROR_MESSAGE, None),
-        KEY_LOGIN_FORM: request.session.pop(KEY_LOGIN_FORM, LoginForm()),
-        KEY_REGISTRATION_FORM: request.session.pop(KEY_REGISTRATION_FORM, RegistrationForm()),
+        KEY_LOGIN_FORM: request.session.pop(KEY_LOGIN_FORM, LoginForm().as_ul()),
+        KEY_REGISTRATION_FORM: request.session.pop(KEY_REGISTRATION_FORM, RegistrationForm().as_ul()),
         KEY_USER: request.user,
         KEY_IS_AUTHENTICATED: request.user.is_authenticated(),
-        KEY_SHOW_LOGIN: request.session.pop(KEY_SHOW_LOGIN,False)
+        KEY_SHOW_LOGIN: request.session.pop(KEY_SHOW_LOGIN,False),
+        KEY_FORM: request.session.pop(KEY_FORM,None)
     }
