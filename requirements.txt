@@ -7,3 +7,4 @@ pycountry==17.5.14
 social-auth-app-django==1.2.0
 pillow==4.2.1
 pyotp==2.2.6
+coverage
