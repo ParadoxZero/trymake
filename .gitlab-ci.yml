@@ -4,6 +4,3 @@ all_tests:
   script:
    - bash ./init_ubuntu.sh
    - bash ./configure_dev.sh all
-  when: on_success
-  only:
-    - dev
