@@ -17,6 +17,8 @@ install() {
         echo "Python Version Not supported"
         exit 1
     fi
+
+    pip install --upgrade pip
     pip install -r requirements.txt
     python manage.py makemigrations
     python manage.py migrate
