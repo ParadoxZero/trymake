@@ -26,7 +26,8 @@ install() {
 }
 
 test(){
-python manage.py test
+coverage run --source='.' manage.py test
+coverage report
 }
 remove_data(){
 bash remove_migrations.sh y
