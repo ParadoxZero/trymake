@@ -2,5 +2,5 @@ image: python:3.6
 
 all_tests:
   script:
-   - bash ./init_ubuntu.sh
-   - bash ./configure_dev.sh all
+   - bash ./scripts/init_ubuntu.sh
+   - bash ./scripts/install.sh install

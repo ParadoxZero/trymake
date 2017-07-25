@@ -17,9 +17,17 @@ install() {
         echo "Python Version Not supported"
         exit 1
     fi
+    echo "***********************************************"
+    echo "* Configuring python                          *"
+    echo "***********************************************"
+    python --version
 
     pip install --upgrade pip
     pip install -r requirements.txt
+
+    echo "***********************************************"
+    echo "* Configuring Project                         *"
+    echo "***********************************************"
     python manage.py makemigrations
     python manage.py migrate
     python manage.py insert_country_data
@@ -30,6 +38,9 @@ coverage run --source='.' manage.py test
 coverage report
 }
 remove_data(){
+echo "***********************************************"
+echo "* Removing Migrations if any                  *"
+echo "***********************************************"
 bash remove_migrations.sh y
 }
 
@@ -40,9 +51,13 @@ fi
 
 case $1 in
 
-install) install ;;
-remove) remove_data ;;
-test) test ;;
+install)
+install
+test ;;
+remove)
+remove_data ;;
+test)
+test ;;
 all)
 remove_data
 install

@@ -95,6 +95,7 @@ ERROR_CUSTOMER_DOES_NOT_EXISTS = "Requested customer does not exists"
 ERROR_INVALID_TOKEN = "Invalid Token"
 ERROR_VERIFY_EMAIL = "Please verify your email"
 ERROR_LOGIN_REQUIRED = "You will need to Login to access that url"
+ERROR_NOT_CUSTOMER = "You are not registered as a customer"
 
 ###########################
 # Messages                #
@@ -125,6 +126,6 @@ def get_template_context(request) -> dict:
         KEY_REGISTRATION_FORM: request.session.pop(KEY_REGISTRATION_FORM, RegistrationForm().as_ul()),
         KEY_USER: request.user,
         KEY_IS_AUTHENTICATED: request.user.is_authenticated(),
-        KEY_SHOW_LOGIN: request.session.pop(KEY_SHOW_LOGIN,False),
+        KEY_SHOW_LOGIN: request.session.pop(KEY_SHOW_LOGIN,False),  # Whether to show the login modal in the page.
         KEY_FORM: request.session.pop(KEY_FORM,None)
     }
