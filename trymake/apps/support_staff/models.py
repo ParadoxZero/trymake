@@ -22,6 +22,7 @@ class Permissions(models.Model):
     comments = models.BooleanField()
     # TODO add more permissions
 
+
 class Staff(models.Model):
     user = models.OneToOneField(User)
     permission = models.ForeignKey(Permissions)
@@ -29,4 +30,4 @@ class Staff(models.Model):
     email = models.EmailField()
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
-    phone = models.CharField(validators=[phone_validator], max_length=11,unique=True)
+    phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)

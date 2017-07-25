@@ -24,10 +24,13 @@ def customer_login_required(func):
     def new_func(request):
         if request.user.is_authenticated():
             if request.user.groups.filter(name=Customer.GROUP_NAME).exists():
-                user = request.user
+                user = request.user  # type: User
                 if not user.is_active:
                     request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_VERIFY_EMAIL
                     request.sesssion[utils.KEY_SHOW_LOGIN] = True
+                    return redirect_to_origin(request)
+                if not user.groups.filter(name=Customer.GROUP_NAME).exists():
+                    request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_NOT_CUSTOMER
                     return redirect_to_origin(request)
                 return func(request)
         request.session[utils.KEY_ERROR_MESSAGE] = utils.ERROR_LOGIN_REQUIRED
