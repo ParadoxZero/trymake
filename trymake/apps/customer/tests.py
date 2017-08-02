@@ -42,20 +42,23 @@ class CustomerTest(TestCase):
             value = True
         except IntegrityError:
             value = False
-        self.assertIs(value,False)
+        self.assertIs(value, False)
 
     def test_set_address(self):
-        sidhin=Customer.create("me@sidhin.in","sidhin1234","Sidhin","Thomas")
-        sidhin.add_address("test_addr","Long address","New Delhi",
-                           State.objects.get(name="Delhi"),"110075","Mtro station","9447480852")
+        sidhin = Customer.create("me@sidhin.in", "sidhin1234", "Sidhin", "Thomas")
+        sidhin.add_address("test_addr", "Long address", "New Delhi",
+                           State.objects.get(name="Delhi"), "110075", "Mtro station", "9447480852")
         address = Address.objects.filter(customer=sidhin)
-        self.assertEqual(address.count(),1)
+        self.assertEqual(address.count(), 1)
 
     def test_get_address(self):
-        sidhin = Customer.create("me@sidhin.in","sidhin1234","Sidhin","Thomas")
+        sidhin = Customer.create("me@sidhin.in", "sidhin1234", "Sidhin", "Thomas")
         sidhin.add_address("test_addr", "Long address", "New Delhi",
                            State.objects.get(name="Delhi"), "110075", "Mtro station", "9447480852")
         list = sidhin.get_address_list()
-        self.assertEqual(list.count(),1)
+        self.assertEqual(list.count(), 1)
         addresss = list.first()
-        self.assertEqual(addresss.name,"test_addr")
+        self.assertEqual(addresss.name, "test_addr")
+
+    def test_first_test(self):
+        self.assertEqual(False, True)
