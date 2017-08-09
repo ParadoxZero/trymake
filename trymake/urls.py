@@ -30,7 +30,7 @@ from social_django import urls
 from trymake import settings
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    #url(r'^admin/', admin.site.urls),
     url(r'^oauth/', include('social_django.urls', namespace='social')),
     url(r'', include('trymake.website.core.urls', namespace="core")),
 ]
