@@ -60,8 +60,7 @@ class Customer(models.Model):
     is_verified = models.BooleanField(default=False)
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
-    #phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
-    phone = models.IntegerField(validators=[phone_validator], max_length=10, unique=True)
+    phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
     phone_verified = models.BooleanField(default=False)
 
     default_address = models.ForeignKey('Address', null=True, on_delete=models.SET_NULL, related_name='default_address')
@@ -104,7 +103,7 @@ class Customer(models.Model):
     def create(email: str, password: str, firstname: str, phone: str) -> 'Customer':
         if User.objects.filter(email=email).exists():
             raise IntegrityError("Email ID Duplicated")
-        user = User(username=email,email=email)
+        user = User(username=email, email=email)
         user.set_password(password)
         user.is_active = False
         user.save()
@@ -113,9 +112,9 @@ class Customer(models.Model):
         customer.user = user
         customer.name = firstname
         customer.phone = phone
-        if phone.__len__()>10:
+        if phone.__len__() > 10:
             raise Exception('phone number more than 10 digits')
-        elif phone.__len__()<10:
+        elif phone.__len__() < 10:
             raise Exception('phone number less than 10 digits')
         else:
             try:
@@ -133,9 +132,9 @@ class Customer(models.Model):
         customer.user = user
         customer.name = "%s %s" % (user.first_name, user.last_name)
         customer.phone = phone
-        if phone.__len__()>10:
+        if phone.__len__() > 10:
             raise Exception('phone number more than 10 digits')
-        elif phone.__len__()<10:
+        elif phone.__len__() < 10:
             raise Exception('phone number less than 10 digits')
         else:
             try:
@@ -222,7 +221,7 @@ class State(models.Model):
 
 class Address(models.Model):
     customer = models.ForeignKey(Customer, db_index=True, on_delete=models.SET_NULL, null=True, unique=False)
-    name = models.CharField(max_length=250,  unique=True)
+    name = models.CharField(max_length=250, unique=True)
     address = models.TextField()
 
     phone = models.CharField(validators=[phone_validator], max_length=11)
@@ -281,4 +280,4 @@ class UniqueToken(models.Model):
         return str(token.token)
 
     def __str__(self):
-        return "%s: %s"%(self.customer, str(self.token))
+        return "%s: %s" % (self.customer, str(self.token))
