@@ -112,12 +112,17 @@ class Customer(models.Model):
         customer.user = user
         customer.name = firstname
         customer.phone = phone
-        try:
-            customer.save()
-        except IntegrityError as e:
-            customer.user.delete()
-            raise e
-        Customer._add_group(customer)
+        if phone.__len__()>10:
+            raise Exception('phone number more than 10 digits')
+        elif phone.__len__()<10:
+            raise Exception('phone number less than 10 digits')
+        else:
+            try:
+                customer.save()
+            except IntegrityError as e:
+                customer.user.delete()
+                raise e
+            Customer._add_group(customer)
         return customer
 
     @staticmethod
@@ -127,12 +132,17 @@ class Customer(models.Model):
         customer.user = user
         customer.name = "%s %s" % (user.first_name, user.last_name)
         customer.phone = phone
-        try:
-            customer.save()
-        except IntegrityError:
-            customer.user.delete()
-            raise IntegrityError("Email ID Duplicated")
-        Customer._add_group(customer)
+        if phone.__len__()>10:
+            raise Exception('phone number more than 10 digits')
+        elif phone.__len__()<10:
+            raise Exception('phone number less than 10 digits')
+        else:
+            try:
+                customer.save()
+            except IntegrityError as e:
+                customer.user.delete()
+                raise e
+            Customer._add_group(customer)
         return customer
 
     @staticmethod

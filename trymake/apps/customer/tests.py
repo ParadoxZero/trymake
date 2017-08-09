@@ -72,3 +72,29 @@ class CustomerTest(TestCase):
         except Exception:
             test = False
         self.assertEqual(test, True)
+
+    def test_phone_more_than_ten_digit(self):
+        user = User(username="edwin@trymake.com", email="edwin@trymake.com")
+        password = "dasdfnfnFw2213@"
+        test = False
+        user.set_password(password)
+        user.is_active = False
+        user.save()
+        try:
+            Customer.create_with_existing_user(user, "87823178931")
+        except Exception:
+            test = True
+        self.assertEqual(test, True)
+
+    def test_phone_less_than_ten_digit(self):
+        user = User(username="edwin@trymake.com", email="edwin@trymake.com")
+        password = "dasdfnfnFw2213@"
+        test = False
+        user.set_password(password)
+        user.is_active = False
+        user.save()
+        try:
+            Customer.create_with_existing_user(user, "23178931")
+        except Exception:
+            test = True
+        self.assertEqual(test, True)
