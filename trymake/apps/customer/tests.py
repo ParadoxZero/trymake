@@ -9,7 +9,7 @@ Unauthorized copying of this file, via any medium is strictly prohibited
 Proprietary and confidential
 
 """
-
+from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import TestCase
 from django.urls import reverse
@@ -60,5 +60,15 @@ class CustomerTest(TestCase):
         addresss = list.first()
         self.assertEqual(addresss.name, "test_addr")
 
-    def test_first_test(self):
-        self.assertEqual(False, True)
+    def test_create_customer_existing_user(self):
+        user = User(username="edwin@trymake.com", email="edwin@trymake.com")
+        password = "dasdfnfnFw2213@"
+        test = True
+        user.set_password(password)
+        user.is_active = False
+        user.save()
+        try:
+            Customer.create_with_existing_user(user, "8823178931")
+        except Exception:
+            test = False
+        self.assertEqual(test, True)
