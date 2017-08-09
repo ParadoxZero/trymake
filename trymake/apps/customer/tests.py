@@ -98,3 +98,16 @@ class CustomerTest(TestCase):
         except Exception:
             test = True
         self.assertEqual(test, True)
+
+    def test_invalid_characters_phone(self):
+        user = User(username="edwin@trymake.com", email="edwin@trymake.com")
+        password = "dasdfnfnFw2213@"
+        test = False
+        user.set_password(password)
+        user.is_active = False
+        user.save()
+        try:
+            Customer.create_with_existing_user(user, "2317893da1")
+        except Exception:
+            test = True
+        self.assertEqual(test, True)

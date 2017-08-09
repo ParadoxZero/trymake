@@ -60,7 +60,8 @@ class Customer(models.Model):
     is_verified = models.BooleanField(default=False)
 
     phone_validator = RegexValidator(regex=r"[0-9]{10}", message="Format: 9999999999")
-    phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
+    #phone = models.CharField(validators=[phone_validator], max_length=11, unique=True)
+    phone = models.IntegerField(validators=[phone_validator], max_length=10, unique=True)
     phone_verified = models.BooleanField(default=False)
 
     default_address = models.ForeignKey('Address', null=True, on_delete=models.SET_NULL, related_name='default_address')
