@@ -13,6 +13,8 @@ Proprietary and confidential
 
 import os
 
+from configSOCIAL_AUTH_KEYS import *
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -170,23 +172,6 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
-
-SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
-
-SOCIAL_AUTH_GITHUB_KEY = '41af3b1d2a8be6edfd13'
-SOCIAL_AUTH_GITHUB_SECRET = 'e984cf00bf50094f6a3eee0de8d6c43bf9347bd7'
-SOCIAL_AUTH_GITHUB_SCOPE = ['user']
-
-SOCIAL_AUTH_TWITTER_KEY = '8I38YrIxBjv0i3E9stm5fArvG'
-SOCIAL_AUTH_TWITTER_SECRET = 'HW7NFUuSfNyF7ULQsV5MFetIS4lML9steFvA0LhFccTVHcq5po'
-
-SOCIAL_AUTH_FACEBOOK_KEY = '132278897358393'
-SOCIAL_AUTH_FACEBOOK_SECRET = 'ce7dd0818eb2c89ab4f0b1c992491c58'
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '800674875324-9oc53l62h2q8lta7jtnrsif760phsld6.apps.googleusercontent.com'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = 'vnb29wyqtHB0kGrGTIQ8xi4g'
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['profile','email']
 
 
 # Custom settings
